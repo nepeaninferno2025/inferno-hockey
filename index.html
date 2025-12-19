@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Inferno Nepean Hockey</title>
+
+<style>
+body{margin:0;font-family:Arial;background:#0f0f0f;color:#f5f5f5}
+header{background:linear-gradient(90deg,#b30000,#ff4500);padding:20px;display:flex;flex-wrap:wrap;align-items:center;gap:20px}
+header img{height:80px;cursor:pointer}
+nav{display:flex;flex-wrap:wrap;gap:15px}
+nav a{color:white;text-decoration:none;font-weight:bold;cursor:pointer}
+nav a:hover{text-decoration:underline}
+section{padding:40px 20px;max-width:1200px;margin:auto}
+h2{border-left:5px solid #ff4500;padding-left:12px}
+h3{border-left:4px solid #ff4500;padding-left:10px;margin-top:30px}
+.card{background:#1a1a1a;padding:20px;border-radius:14px;margin-bottom:25px}
+input,textarea,select,button{padding:8px;margin:5px;border-radius:6px;border:none}
+textarea{width:100%}
+button{background:#ff4500;color:black;font-weight:bold;cursor:pointer}
+button:hover{opacity:.9}
+table{width:100%;border-collapse:collapse;margin-top:15px;min-width:350px}
+th,td{padding:10px;border-bottom:1px solid #333}
+th{background:#222}
+.admin-only{display:none}
+.page{display:none}
+.page.active{display:block}
+.table-wrap{overflow-x:auto}
+#loginOverlay{position:fixed;inset:0;background:#0f0f0f;display:flex;align-items:center;justify-content:center;flex-direction:column;z-index:9999}
+#logoutBtn{display:none}
+@media(max-width:700px){header{flex-direction:column}nav{justify-content:center}input,select,button{width:100%}}
+</style>
+</head>
+
+<body>
+
+<!-- LOGIN -->
+<div id="loginOverlay">
+<h2>Inferno Team Login</h2>
+<input type="password" id="memberPass" placeholder="Team Password">
+<button onclick="memberLogin()">Enter as Member</button>
+<hr style="width:240px;margin:20px">
+<h3>Admin Login</h3>
+<input id="adminUser" placeholder="Admin Username">
+<input type="password" id="adminPass" placeholder="Admin Password">
+<button onclick="adminLogin()">Admin Login</button>
+<h4>Create Admin</h4>
+<input id="newAdminUser" placeholder="New Admin Username">
+<input type="password" id="newAdminPass" placeholder="New Admin Password">
+<input id="adminKey" placeholder="Admin Key">
+<button onclick="createAdmin()">Create Admin</button>
+</div>
+
+<header>
+<img id="logoImg" src="" alt="Inferno Logo">
+<nav>
+<a onclick="showPage('about')">About</a>
+<a onclick="showPage('news')">News</a>
+<a onclick="showPage('roster')">Roster</a>
+<a onclick="showPage('stats')">Player Stats</a>
+<a onclick="showPage('league')">League Stats</a>
+<a onclick="showPage('videos')">Videos</a>
+<a onclick="showPage('coaches')">Coaches</a>
+</nav>
+<button id="logoutBtn" onclick="logout()">Logout</button>
+</header>
+
+<section class="admin-only">
+<input type="file" id="logoUpload" accept="image/*">
+<button onclick="updateLogo()">Change Logo</button>
+</section>
+
+<!-- ABOUT -->
+<section id="about" class="page">
+<h2>About</h2>
+<div class="card">
+<textarea id="aboutInput" class="admin-only"></textarea>
+<button class="admin-only" onclick="saveAbout()">Save</button>
+<p id="aboutText"></p>
+</div>
+</section>
+
+<!-- NEWS -->
+<section id="news" class="page">
+<h2>Team News</h2>
+<div class="card">
+<div class="admin-only">
+<input id="newsTitle" placeholder="Title">
+<textarea id="newsText"></textarea>
+<input type="file" id="newsImage">
+<button onclick="addNews()">Post News</button>
+</div>
+<div id="newsFeed"></div>
+</div>
+</section>
+
+<!-- ROSTER -->
+<section id="roster" class="page">
+<h2>Team Roster</h2>
+<div class="card">
+<form id="rosterForm" class="admin-only">
+<input placeholder="Player Name" required>
+<select required>
+<option value="">Group</option>
+<option value="F">Forward</option>
+<option value="D">Defense</option>
+<option value="G">Goalie</option>
+</select>
+<select required>
+<option value="">Position</option>
+<option value="Center">Center</option>
+<option value="Left Wing">Left Wing</option>
+<option value="Right Wing">Right Wing</option>
+<option value="Defense">Defense</option>
+<option value="Goalie">Goalie</option>
+</select>
+<input placeholder="Jersey #" required>
+<button>Add Player</button>
+</form>
+
+<h3>Forwards</h3>
+<div class="table-wrap"><table><thead><tr><th>Name</th><th>#</th><th>Position</th><th class="admin-only">Actions</th></tr></thead><tbody id="rosterF"></tbody></table></div>
+<h3>Defense</h3>
+<div class="table-wrap"><table><thead><tr><th>Name</th><th>#</th><th>Position</th><th class="admin-only">Actions</th></tr></thead><tbody id="rosterD"></tbody></table></div>
+<h3>Goalies</h3>
+<div class="table-wrap"><table><thead><tr><th>Name</th><th>#</th><th>Position</th><th class="admin-only">Actions</th></tr></thead><tbody id="rosterG"></tbody></table></div>
+</div>
+</section>
+
+<!-- PLAYER STATS -->
+<section id="stats" class="page">
+<h2>Player Stats</h2>
+<div class="card">
+<div class="admin-only">
+<button onclick="addPlayerStat()">Add Player Stat</button>
+</div>
+<div class="table-wrap">
+<table id="statsTable">
+<thead><tr><th>Name</th><th>Goals</th><th>Assists</th><th>Points</th><th class="admin-only">Actions</th></tr></thead>
+<tbody></tbody>
+</table>
+</div>
+</div>
+</section>
+
+<!-- LEAGUE STANDINGS -->
+<section id="league" class="page">
+<h2>League Standings</h2>
+<div class="card">
+<div class="admin-only">
+<button onclick="addLeagueRow()">Add Team</button>
+</div>
+<div class="table-wrap">
+<table id="leagueTable">
+<thead><tr><th>Team</th><th>W</th><th>L</th><th>PTS</th><th class="admin-only">Actions</th></tr></thead>
+<tbody></tbody>
+</table>
+</div>
+</div>
+</section>
+
+<!-- VIDEOS -->
+<section id="videos" class="page">
+<h2>Team Videos</h2>
+<div class="card">
+<div class="admin-only">
+<input id="videoURL" placeholder="YouTube URL">
+<button onclick="addVideo()">Add Video</button>
+</div>
+<div id="videoFeed"></div>
+</div>
+</section>
+
+<!-- COACHES -->
+<section id="coaches" class="page">
+<h2>Coaches</h2>
+<div class="card">
+<div class="admin-only">
+<input placeholder="Coach Name" id="coachName">
+<input placeholder="Position" id="coachPos">
+<button onclick="addCoach()">Add Coach</button>
+</div>
+<div id="coachesList"></div>
+</div>
+</section>
+
+<footer>Inferno Nepean Hockey © 2025</footer>
+
+<script>
+const MEMBER_PASSWORD="INferno12831";
+const ADMIN_KEY="88123612";
+let admins=JSON.parse(localStorage.admins||'[]');
+
+const logoImg=document.getElementById("logoImg");
+if(localStorage.logoData){logoImg.src=localStorage.logoData;} else {logoImg.src="assets/inferno-logo.png";}
+
+function updateLogo(){const file=document.getElementById("logoUpload").files[0]; if(!file)return alert("Select a file"); const reader=new FileReader(); reader.onload=function(e){logoImg.src=e.target.result; localStorage.logoData=e.target.result; alert("Logo updated!");}; reader.readAsDataURL(file);}
+
+function memberLogin(){if(memberPass.value!==MEMBER_PASSWORD)return alert("Wrong password"); loginOverlay.style.display="none"; logoutBtn.style.display="block"; showPage("about");}
+function adminLogin(){if(!admins.find(a=>a.username===adminUser.value&&a.password===adminPass.value))return alert("Invalid admin"); document.querySelectorAll(".admin-only").forEach(e=>e.style.display="block"); loginOverlay.style.display="none"; logoutBtn.style.display="block"; showPage("about");}
+function createAdmin(){if(adminKey.value!==ADMIN_KEY)return alert("Wrong key"); admins.push({username:newAdminUser.value,password:newAdminPass.value}); localStorage.admins=JSON.stringify(admins); alert("Admin created");}
+function logout(){location.reload();}
+function showPage(id){document.querySelectorAll(".page").forEach(p=>p.classList.remove("active")); document.getElementById(id).classList.add("active");}
+
+/* ROSTER */
+const rosterF=document.getElementById("rosterF");
+const rosterD=document.getElementById("rosterD");
+const rosterG=document.getElementById("rosterG");
+
+function addRosterRow(p){
+  const tr=document.createElement("tr");
+  tr.innerHTML=`<td>${p.name}</td><td>${p.num}</td><td>${p.pos||''}</td>
+  <td class="admin-only"><button onclick="editRoster(this)">Edit</button> <button onclick="deleteRoster(this)">🗑️</button></td>`;
+  (p.group==="F"?rosterF:p.group==="D"?rosterD:rosterG).appendChild(tr);
+}
+
+function saveRoster(){const collect=(t,g)=>[...t.rows].map(r=>({name:r.cells[0].textContent,num:r.cells[1].textContent,pos:r.cells[2].textContent,group:g})); localStorage.roster=JSON.stringify([...collect(rosterF,"F"),...collect(rosterD,"D"),...collect(rosterG,"G")]);}
+function loadRoster(){JSON.parse(localStorage.roster||"[]").forEach(addRosterRow);}
+function editRoster(b){const r=b.parentElement.parentElement;if(b.textContent==="Edit"){r.cells[0].innerHTML=`<input value="${r.cells[0].textContent}">`; r.cells[1].innerHTML=`<input value="${r.cells[1].textContent}">`; r.cells[2].innerHTML=`<input value="${r.cells[2].textContent}">`; b.textContent="Save";} else {r.cells[0].textContent=r.cells[0].querySelector("input").value; r.cells[1].textContent=r.cells[1].querySelector("input").value; r.cells[2].textContent=r.cells[2].querySelector("input").value; b.textContent="Edit"; saveRoster();}}
+function deleteRoster(b){b.parentElement.parentElement.remove(); saveRoster();}
+document.getElementById("rosterForm").onsubmit=e=>{e.preventDefault(); const [n,g,pos,num]=[e.target[0].value,e.target[1].value,e.target[2].value,e.target[3].value]; addRosterRow({name:n,group:g,pos,num}); saveRoster(); e.target.reset();}
+loadRoster();
+
+/* PLAYER STATS */
+const statsTable=document.getElementById("statsTable").querySelector("tbody");
+function addPlayerStat(){const name=prompt("Player Name:"); const goals=prompt("Goals:"); const assists=prompt("Assists:"); if(!name)return; const tr=document.createElement("tr"); tr.innerHTML=`<td>${name}</td><td>${goals||0}</td><td>${assists||0}</td><td>${(parseInt(goals)||0)+(parseInt(assists)||0)}</td><td class="admin-only"><button onclick="editStat(this)">Edit</button> <button onclick="deleteStat(this)">🗑️</button></td>`; statsTable.appendChild(tr);}
+function editStat(b){const r=b.parentElement.parentElement;if(b.textContent==="Edit"){r.cells[0].innerHTML=`<input value="${r.cells[0].textContent}">`; r.cells[1].innerHTML=`<input value="${r.cells[1].textContent}">`; r.cells[2].innerHTML=`<input value="${r.cells[2].textContent}">`; b.textContent="Save";} else {r.cells[0].textContent=r.cells[0].querySelector("input").value;r.cells[1].textContent=r.cells[1].querySelector("input").value;r.cells[2].textContent=r.cells[2].querySelector("input").value;r.cells[3].textContent=parseInt(r.cells[1].textContent||0)+parseInt(r.cells[2].textContent||0); b.textContent="Edit";}}
+function deleteStat(b){b.parentElement.parentElement.remove();}
+
+/* LEAGUE */
+const leagueTable=document.getElementById("leagueTable").querySelector("tbody");
+function addLeagueRow(){const team=prompt("Team Name:"); const w=prompt("Wins:"); const l=prompt("Losses:"); if(!team)return; const pts=(parseInt(w)||0)*2; const tr=document.createElement("tr"); tr.innerHTML=`<td>${team}</td><td>${w||0}</td><td>${l||0}</td><td>${pts}</td><td class="admin-only"><button onclick="editLeague(this)">Edit</button> <button onclick="deleteLeague(this)">🗑️</button></td>`; leagueTable.appendChild(tr);}
+function editLeague(b){const r=b.parentElement.parentElement;if(b.textContent==="Edit"){r.cells[0].innerHTML=`<input value="${r.cells[0].textContent}">`; r.cells[1].innerHTML=`<input value="${r.cells[1].textContent}">`; r.cells[2].innerHTML=`<input value="${r.cells[2].textContent}">`; b.textContent="Save";} else {r.cells[0].textContent=r.cells[0].querySelector("input").value;r.cells[1].textContent=r.cells[1].querySelector("input").value;r.cells[2].textContent=r.cells[2].querySelector("input").value;r.cells[3].textContent=(parseInt(r.cells[1].textContent)||0)*2; b.textContent="Edit";}}
+function deleteLeague(b){b.parentElement.parentElement.remove();}
+
+/* VIDEOS */
+const videoFeed=document.getElementById("videoFeed");
+function addVideo(){const url=document.getElementById("videoURL").value; if(!url) return alert("Enter a URL"); const iframe=document.createElement("iframe"); iframe.width="560"; iframe.height="315"; iframe.src=url.replace("watch?v=","embed/"); iframe.frameBorder="0"; iframe.allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"; iframe.allowFullscreen=true; videoFeed.appendChild(iframe); document.getElementById("videoURL").value="";}
+
+/* COACHES */
+const coachesList=document.getElementById("coachesList");
+function addCoach(){const name=document.getElementById("coachName").value; const pos=document.getElementById("coachPos").value; if(!name) return; const p=document.createElement("p"); p.textContent=`${name} - ${pos}`; coachesList.appendChild(p); document.getElementById("coachName").value=""; document.getElementById("coachPos").value="";}
+
+// Expose functions to global scope
+window.showPage=showPage; window.memberLogin=memberLogin; window.adminLogin=adminLogin; window.createAdmin=createAdmin; window.logout=logout; window.updateLogo=updateLogo;
+window.editRoster=editRoster; window.deleteRoster=deleteRoster;
+window.addPlayerStat=addPlayerStat; window.editStat=editStat; window.deleteStat=deleteStat;
+window.addLeagueRow=addLeagueRow; window.editLeague=editLeague; window.deleteLeague=deleteLeague;
+window.addVideo=addVideo; window.addCoach=addCoach;
+
+// Show About page by default
+showPage('about');
+</script>
+
+</body>
+</html>
