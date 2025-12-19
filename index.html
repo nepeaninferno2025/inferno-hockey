@@ -3,17 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Inferno Nepean Hockey</title>
+<title>Inferno Nepean Hockey - Admin Panel</title>
 <style>
 body{margin:0;font-family:Arial;background:#0f0f0f;color:#f5f5f5}
-header{background:linear-gradient(90deg,#b30000,#ff4500);padding:20px;display:flex;flex-wrap:wrap;align-items:center;gap:20px}
-header img{height:80px;cursor:pointer}
-nav{display:flex;flex-wrap:wrap;gap:15px}
+header{background:linear-gradient(90deg,#b30000,#ff4500);padding:20px;display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+header img{height:80px}
+nav{display:flex;gap:15px;flex-wrap:wrap}
 nav a{color:white;text-decoration:none;font-weight:bold;cursor:pointer}
 nav a:hover{text-decoration:underline}
 section{padding:40px 20px;max-width:1200px;margin:auto}
 h2{border-left:5px solid #ff4500;padding-left:12px}
-h3{border-left:4px solid #ff4500;padding-left:10px;margin-top:30px}
 .card{background:#1a1a1a;padding:20px;border-radius:14px;margin-bottom:25px}
 input,textarea,select,button{padding:8px;margin:5px;border-radius:6px;border:none}
 textarea, select{width:100%}
@@ -22,12 +21,12 @@ button:hover{opacity:.9}
 table{width:100%;border-collapse:collapse;margin-top:15px;min-width:350px}
 th,td{padding:10px;border-bottom:1px solid #333}
 th{background:#222}
-.admin-only{display:none}
-.page{display:none}
-.page.active{display:block}
 .table-wrap{overflow-x:auto}
 #loginOverlay{position:fixed;inset:0;background:#0f0f0f;display:flex;align-items:center;justify-content:center;flex-direction:column;z-index:9999}
 #logoutBtn{display:none}
+.page{display:none}
+.page.active{display:block}
+.admin-only{display:none}
 @media(max-width:700px){header{flex-direction:column}nav{justify-content:center}input,select,button{width:100%}}
 </style>
 </head>
@@ -35,23 +34,14 @@ th{background:#222}
 
 <!-- LOGIN -->
 <div id="loginOverlay">
-<h2>Inferno Team Login</h2>
-<input type="password" id="memberPass" placeholder="Team Password">
-<button onclick="memberLogin()">Enter as Member</button>
-<hr style="width:240px;margin:20px">
-<h3>Admin Login</h3>
-<input id="adminUser" placeholder="Admin Username">
-<input type="password" id="adminPass" placeholder="Admin Password">
-<button onclick="adminLogin()">Admin Login</button>
-<h4>Create Admin</h4>
-<input id="newAdminUser" placeholder="New Admin Username">
-<input type="password" id="newAdminPass" placeholder="New Admin Password">
-<input id="adminKey" placeholder="Admin Key">
-<button onclick="createAdmin()">Create Admin</button>
+<h2>Admin Login</h2>
+<input id="adminUser" placeholder="Username">
+<input type="password" id="adminPass" placeholder="Password">
+<button onclick="adminLogin()">Login</button>
 </div>
 
-<header>
-<img id="logoImg" src="" alt="Inferno Logo">
+<header class="admin-only">
+<img id="logoImg" src="assets/inferno-logo.png" alt="Inferno Logo">
 <nav>
 <a onclick="showPage('about')">About</a>
 <a onclick="showPage('news')">News</a>
@@ -64,40 +54,32 @@ th{background:#222}
 <button id="logoutBtn" onclick="logout()">Logout</button>
 </header>
 
-<section class="admin-only">
-<input type="file" id="logoUpload" accept="image/*">
-<button onclick="updateLogoFirebase()">Change Logo</button>
-</section>
-
 <!-- ABOUT -->
-<section id="about" class="page">
+<section id="about" class="page admin-only">
 <h2>About Us</h2>
 <div class="card">
-<textarea id="aboutInput" class="admin-only"></textarea>
-<button class="admin-only" onclick="saveAbout()">Save</button>
-<p id="aboutText"></p>
+<textarea id="aboutInput"></textarea>
+<button onclick="saveAbout()">Save About</button>
 </div>
 </section>
 
 <!-- NEWS -->
-<section id="news" class="page">
-<h2>Team News</h2>
+<section id="news" class="page admin-only">
+<h2>News</h2>
 <div class="card">
-<div class="admin-only">
 <input id="newsTitle" placeholder="Title">
-<textarea id="newsText"></textarea>
+<textarea id="newsText" placeholder="News content"></textarea>
 <input type="file" id="newsImage">
-<button onclick="addNews()">Post News</button>
+<button onclick="addNews()">Add News</button>
 </div>
 <div id="newsFeed"></div>
-</div>
 </section>
 
 <!-- ROSTER -->
-<section id="roster" class="page">
-<h2>Team Roster</h2>
+<section id="roster" class="page admin-only">
+<h2>Roster</h2>
 <div class="card">
-<form id="rosterForm" class="admin-only">
+<form id="rosterForm">
 <input placeholder="Player Name" required>
 <select required>
 <option value="">Group</option>
@@ -116,156 +98,135 @@ th{background:#222}
 <input placeholder="Jersey #" required>
 <button>Add Player</button>
 </form>
-
-<h3>Forwards</h3>
 <div class="table-wrap">
 <table>
-<thead><tr><th>Name</th><th>#</th><th>Position</th><th class="admin-only">Actions</th></tr></thead>
-<tbody id="rosterF"></tbody>
-</table>
-</div>
-
-<h3>Defense</h3>
-<div class="table-wrap">
-<table>
-<thead><tr><th>Name</th><th>#</th><th>Position</th><th class="admin-only">Actions</th></tr></thead>
-<tbody id="rosterD"></tbody>
-</table>
-</div>
-
-<h3>Goalies</h3>
-<div class="table-wrap">
-<table>
-<thead><tr><th>Name</th><th>#</th><th>Position</th><th class="admin-only">Actions</th></tr></thead>
-<tbody id="rosterG"></tbody>
+<thead><tr><th>Name</th><th>#</th><th>Position</th><th>Group</th><th>Actions</th></tr></thead>
+<tbody id="rosterTable"></tbody>
 </table>
 </div>
 </div>
 </section>
 
 <!-- Player Stats -->
-<section id="stats" class="page">
+<section id="stats" class="page admin-only">
 <h2>Player Stats</h2>
 <div class="card">
-<p>Player stats will be added here. Admins can update via Firebase.</p>
+<textarea id="statsInput" placeholder="Update player stats"></textarea>
+<button onclick="saveStats()">Save Stats</button>
 </div>
 </section>
 
 <!-- League Standings -->
-<section id="league" class="page">
+<section id="league" class="page admin-only">
 <h2>League Standings</h2>
 <div class="card">
-<p>Embed via iframe or link to external standings site.</p>
-<a href="https://example.com/standings" target="_blank">View Standings</a>
+<input id="leagueLink" placeholder="Link to standings page">
+<button onclick="saveLeague()">Save</button>
+<p>Current Link: <a id="leagueCurrent" href="#" target="_blank"></a></p>
 </div>
 </section>
 
 <!-- Videos -->
-<section id="videos" class="page">
-<h2>Team Videos</h2>
+<section id="videos" class="page admin-only">
+<h2>Videos</h2>
 <div class="card">
-<p>Admin can add video links here.</p>
+<textarea id="videosInput" placeholder="Paste video URLs, one per line"></textarea>
+<button onclick="saveVideos()">Save Videos</button>
+<div id="videosList"></div>
 </div>
 </section>
 
 <!-- Coaches -->
-<section id="coaches" class="page">
+<section id="coaches" class="page admin-only">
 <h2>Coaches</h2>
 <div class="card">
-<p>Coaches info goes here.</p>
+<textarea id="coachesInput" placeholder="Coach info"></textarea>
+<button onclick="saveCoaches()">Save Coaches</button>
+<div id="coachesList"></div>
 </div>
 </section>
 
-<footer>Inferno Nepean Hockey © 2025</footer>
+<footer class="admin-only">Inferno Nepean Hockey © 2025</footer>
 
-<script type="module">
-// Firebase setup
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
-import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-database.js";
-import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-storage.js";
+<script>
+const ADMIN_USER = "admin";
+const ADMIN_PASS = "password";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyCcl7fjelmFRMSNqrNfCTSEJxJcxj7lano",
-  authDomain: "infernohockey-b39f9.firebaseapp.com",
-  databaseURL: "https://infernohockey-b39f9-default-rtdb.firebaseio.com",
-  projectId: "infernohockey-b39f9",
-  storageBucket: "infernohockey-b39f9.appspot.com",
-  messagingSenderId: "930315123046",
-  appId: "1:930315123046:web:46e46a558e380e8180f0a7"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-const storage = getStorage(app);
-
-// Logo
-const logoImg = document.getElementById("logoImg");
-onValue(ref(db,'logo'), snapshot => { const val = snapshot.val(); if(val) logoImg.src=val; });
-function updateLogoFirebase(){
-  const file = document.getElementById("logoUpload").files[0];
-  if(!file) return alert("Select a file");
-  const storageRef = sRef(storage,'logo.png');
-  uploadBytes(storageRef,file).then(()=> getDownloadURL(storageRef).then(url=> { set(ref(db,'logo'),url); logoImg.src=url; alert("Logo updated!") }));
+function adminLogin(){
+  if(adminUser.value!==ADMIN_USER||adminPass.value!==ADMIN_PASS) return alert("Wrong credentials");
+  loginOverlay.style.display="none";
+  document.querySelectorAll(".admin-only").forEach(e=>e.style.display="block");
+  showPage("about");
 }
-
-// Admin/member login
-const MEMBER_PASSWORD="INferno12831";
-const ADMIN_KEY="88123612";
-let admins=JSON.parse(localStorage.admins||'[]');
-
-function memberLogin(){ if(memberPass.value!==MEMBER_PASSWORD) return alert("Wrong password"); loginOverlay.style.display="none"; logoutBtn.style.display="block"; showPage("about"); }
-function adminLogin(){ if(!admins.find(a=>a.username===adminUser.value&&a.password===adminPass.value)) return alert("Invalid admin"); document.querySelectorAll(".admin-only").forEach(e=>e.style.display="block"); loginOverlay.style.display="none"; logoutBtn.style.display="block"; showPage("about"); }
-function createAdmin(){ if(adminKey.value!==ADMIN_KEY) return alert("Wrong key"); admins.push({username:newAdminUser.value,password:newAdminPass.value}); localStorage.admins=JSON.stringify(admins); alert("Admin created"); }
 function logout(){location.reload();}
-function showPage(id){ document.querySelectorAll(".page").forEach(p=>p.classList.remove("active")); document.getElementById(id).classList.add("active"); }
+function showPage(id){document.querySelectorAll(".page").forEach(p=>p.style.display="none");document.getElementById(id).style.display="block";}
+
+// Logo stays as-is from previous setup
+
+// LocalStorage functions for all editable content
+function saveAbout(){ localStorage.about=aboutInput.value; alert("Saved"); }
+function addNews(){ 
+  const news = {title:newsTitle.value,text:newsText.value};
+  let arr = JSON.parse(localStorage.news||'[]');
+  arr.push(news);
+  localStorage.news=JSON.stringify(arr);
+  renderNews(); alert("News Added");
+}
+function renderNews(){ 
+  const arr=JSON.parse(localStorage.news||'[]');
+  newsFeed.innerHTML = arr.map(n=>`<div class="card"><h3>${n.title}</h3><p>${n.text}</p></div>`).join('');
+}
+function saveStats(){ localStorage.stats=statsInput.value; alert("Saved"); }
+function saveLeague(){ localStorage.league=leagueLink.value; leagueCurrent.href=leagueLink.value; leagueCurrent.textContent=leagueLink.value; alert("Saved"); }
+function saveVideos(){ 
+  const arr = videosInput.value.split("\n").filter(v=>v);
+  localStorage.videos=JSON.stringify(arr);
+  videosList.innerHTML = arr.map(v=>`<a href="${v}" target="_blank">${v}</a><br>`).join('');
+  alert("Saved");
+}
+function saveCoaches(){ localStorage.coaches=coachesInput.value; coachesList.textContent=coachesInput.value; alert("Saved"); }
 
 // Roster
-const rosterF=document.getElementById("rosterF");
-const rosterD=document.getElementById("rosterD");
-const rosterG=document.getElementById("rosterG");
-
-function addRosterRow(p){
-  const tr=document.createElement("tr");
-  tr.innerHTML=`<td>${p.name}</td><td>${p.num}</td><td>${p.position}</td>
-  <td class="admin-only"><button onclick="editRoster(this)">Edit</button><button onclick="deleteRoster(this)">🗑️</button></td>`;
-  (p.group==="F"?rosterF:p.group==="D"?rosterD:rosterG).appendChild(tr);
+let rosterData = JSON.parse(localStorage.roster||'[]');
+function renderRoster(){ 
+  rosterTable.innerHTML='';
+  rosterData.forEach((p,i)=>{ 
+    const tr=document.createElement("tr");
+    tr.innerHTML=`<td>${p.name}</td><td>${p.num}</td><td>${p.position}</td><td>${p.group}</td>
+    <td><button onclick="editPlayer(${i})">Edit</button><button onclick="deletePlayer(${i})">Delete</button></td>`;
+    rosterTable.appendChild(tr);
+  });
 }
-
-function saveRosterPublic(){
-  const collect=(t,g)=>[...t.rows].map(r=>({name:r.cells[0].textContent,num:r.cells[1].textContent,position:r.cells[2].textContent,group:g}));
-  set(ref(db,'roster'),[...collect(rosterF,"F"),...collect(rosterD,"D"),...collect(rosterG,"G")]);
-}
-
-onValue(ref(db,'roster'),snapshot=>{
-  const data = snapshot.val()||[];
-  [rosterF,rosterD,rosterG].forEach(t=>t.innerHTML='');
-  data.forEach(addRosterRow);
-});
-
-function editRoster(b){ const r=b.parentElement.parentElement; if(b.textContent==="Edit"){ r.cells[0].innerHTML=`<input value="${r.cells[0].textContent}">`; r.cells[1].innerHTML=`<input value="${r.cells[1].textContent}">`; r.cells[2].innerHTML=`<input value="${r.cells[2].textContent}">`; b.textContent="Save"; } else{ r.cells[0].textContent=r.cells[0].querySelector("input").value; r.cells[1].textContent=r.cells[1].querySelector("input").value; r.cells[2].textContent=r.cells[2].querySelector("input").value; b.textContent="Edit"; saveRosterPublic(); }}
-function deleteRoster(b){ b.parentElement.parentElement.remove(); saveRosterPublic(); }
-
 document.getElementById("rosterForm").onsubmit=e=>{
   e.preventDefault();
   const [n,g,pos,num]=[e.target[0].value,e.target[1].value,e.target[2].value,e.target[3].value];
-  addRosterRow({name:n,group:g,position:pos,num});
-  saveRosterPublic();
+  rosterData.push({name:n,group:g,position:pos,num});
+  localStorage.roster=JSON.stringify(rosterData);
+  renderRoster();
   e.target.reset();
-};
+}
+window.editPlayer=i=>{
+  const p=prompt("Edit player JSON:",JSON.stringify(rosterData[i]));
+  if(!p) return;
+  rosterData[i]=JSON.parse(p);
+  localStorage.roster=JSON.stringify(rosterData);
+  renderRoster();
+}
+window.deletePlayer=i=>{
+  rosterData.splice(i,1);
+  localStorage.roster=JSON.stringify(rosterData);
+  renderRoster();
+}
 
-// Expose functions for inline onclick
-window.showPage = showPage;
-window.memberLogin = memberLogin;
-window.adminLogin = adminLogin;
-window.createAdmin = createAdmin;
-window.logout = logout;
-window.updateLogoFirebase = updateLogoFirebase;
-window.editRoster = editRoster;
-window.deleteRoster = deleteRoster;
+// Initialize display
+renderNews();
+renderRoster();
+videosList.innerHTML = (JSON.parse(localStorage.videos||'[]')||[]).map(v=>`<a href="${v}" target="_blank">${v}</a><br>`).join('');
+coachesList.textContent = localStorage.coaches||'';
+leagueCurrent.href=localStorage.league||'#'; leagueCurrent.textContent=localStorage.league||'';
+aboutInput.value=localStorage.about||'';
+statsInput.value=localStorage.stats||'';
 
-// Show About page by default
-showPage('about');
 </script>
-
 </body>
 </html>
