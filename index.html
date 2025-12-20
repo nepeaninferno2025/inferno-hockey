@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -44,15 +45,13 @@ button{background:var(--accent);font-weight:700;cursor:pointer;}
 
 .team-record{text-align:center;margin-bottom:30px}
 .record-score{font-size:36px;color:#ff0000;font-weight:900}
-a.link{color:#ff7a3d;text-decoration:none}
-a.link:hover{text-decoration:underline}
 
 .action-btn{padding:3px 6px;margin:0 2px;border:none;border-radius:6px;cursor:pointer;}
 .edit-btn{background:orange;color:#000}
 .delete-btn{background:red;color:#fff}
 
-img.news-img{max-width:100%;margin-bottom:10px;border-radius:6px;}
-video.clip-video{max-width:100%;margin-bottom:10px;border-radius:6px;}
+a.link{color:#ff7a3d;text-decoration:none}
+a.link:hover{text-decoration:underline}
 </style>
 </head>
 
@@ -68,37 +67,16 @@ video.clip-video{max-width:100%;margin-bottom:10px;border-radius:6px;}
   </div>
 
   <nav>
-    <a onclick="show('news')">News</a>
-    <a onclick="show('clips')">Clips</a>
     <a onclick="show('roster')">Roster</a>
     <a onclick="show('league')">League</a>
     <a onclick="show('coaches')">Coaches</a>
+    <a onclick="show('record')">Team Record</a>
     <a class="admin" onclick="show('admin')">Admin</a>
     <a class="logout" id="logoutBtn" onclick="logout()">Logout</a>
   </nav>
 </header>
 
 <main>
-
-<!-- NEWS -->
-<section id="news" class="active">
-  <div class="card">
-    <h2>Team News</h2>
-    <div id="newsText"></div>
-    <textarea id="newsInput" class="admin-only" placeholder="Filename in assets folder, e.g., news1.jpg"></textarea>
-    <button class="admin-only" onclick="addNews()">Add News</button>
-  </div>
-</section>
-
-<!-- CLIPS -->
-<section id="clips">
-  <div class="card">
-    <h2>Clips</h2>
-    <div id="clipsText"></div>
-    <textarea id="clipsInput" class="admin-only" placeholder="Filename in assets folder, e.g., clip1.mp4"></textarea>
-    <button class="admin-only" onclick="addClip()">Add Clip</button>
-  </div>
-</section>
 
 <!-- ROSTER -->
 <section id="roster">
@@ -118,12 +96,6 @@ video.clip-video{max-width:100%;margin-bottom:10px;border-radius:6px;}
 <!-- LEAGUE -->
 <section id="league">
   <div class="card">
-    <div class="team-record">
-      <div class="record-score" id="recordText">0 - 0 - 0</div>
-      <div>U15 HB Team I • 2025–2026</div>
-      <textarea id="recordInput" class="admin-only"></textarea>
-      <button class="admin-only" onclick="save('record')">Save Record</button>
-    </div>
     <h2>League Standings</h2>
     <table>
       <thead>
@@ -146,6 +118,19 @@ video.clip-video{max-width:100%;margin-bottom:10px;border-radius:6px;}
     </table>
     <textarea id="coachesInput" class="admin-only" placeholder="Name | Role"></textarea>
     <button class="admin-only" onclick="save('coaches')">Add Coach</button>
+  </div>
+</section>
+
+<!-- TEAM RECORD -->
+<section id="record">
+  <div class="card">
+    <h2>Team Record</h2>
+    <div class="team-record">
+      <div class="record-score" id="recordText">0 - 0 - 0</div>
+      <div>U15 HB Team I • 2025–2026</div>
+      <textarea id="recordInput" class="admin-only" placeholder="Format: W-L-T"></textarea>
+      <button class="admin-only" onclick="saveRecord()">Save Record</button>
+    </div>
   </div>
 </section>
 
@@ -175,38 +160,38 @@ const db = getDatabase(app);
 const ADMIN_USER="athenadmin";
 const ADMIN_PASS="AthFon32";
 
-window.show=id=>{
-  document.querySelectorAll("section").forEach(s=>s.classList.remove("active"));
+window.show = id => {
+  document.querySelectorAll("section").forEach(s => s.classList.remove("active"));
   document.getElementById(id).classList.add("active");
 };
 
-window.login=()=>{
-  if(user.value!==ADMIN_USER||pass.value!==ADMIN_PASS)
+window.login = () => {
+  if(user.value!==ADMIN_USER || pass.value!==ADMIN_PASS)
     return alert("Incorrect login");
-  document.querySelectorAll(".admin-only").forEach(e=>e.style.display="block");
+  document.querySelectorAll(".admin-only").forEach(e => e.style.display="block");
   logoutBtn.style.display="inline-block";
   alert("Admin mode enabled");
 };
 
-window.logout=()=>{
-  document.querySelectorAll(".admin-only").forEach(e=>e.style.display="none");
+window.logout = () => {
+  document.querySelectorAll(".admin-only").forEach(e => e.style.display="none");
   logoutBtn.style.display="none";
-  show("news");
+  show("roster");
 };
 
-/* --- Tables with Edit/Delete --- */
+/* --- Tables --- */
 function renderTable(key, bodyId, cols){
   onValue(ref(db,key), snap=>{
     const body = document.getElementById(bodyId);
     body.innerHTML = "";
     const data = snap.val() || {};
-    Object.keys(data).forEach(id=>{
+    Object.keys(data).forEach(id => {
       const row = data[id].split("|").map(x=>x.trim());
       if(row.length===cols){
         const tr = document.createElement("tr");
         tr.innerHTML = row.map(v=>`<td>${v}</td>`).join("");
         tr.innerHTML += `<td>
-          <button class="action-btn edit-btn" onclick="editRow('${key}','${id}','${cols}')">Edit</button>
+          <button class="action-btn edit-btn" onclick="editRow('${key}','${id}')">Edit</button>
           <button class="action-btn delete-btn" onclick="deleteRow('${key}','${id}')">Delete</button>
         </td>`;
         body.appendChild(tr);
@@ -215,7 +200,7 @@ function renderTable(key, bodyId, cols){
   });
 }
 
-window.editRow = (key,id,cols)=>{
+window.editRow = (key,id)=>{
   const dataRef = ref(db, key+"/"+id);
   onValue(dataRef, snap=>{
     document.getElementById(key+"Input").value = snap.val();
@@ -234,47 +219,21 @@ window.save = (key)=>{
   input.value="";
 };
 
+function saveRecord(){
+  const val = document.getElementById("recordInput").value.trim();
+  if(!val) return;
+  set(ref(db,"record"), val);
+  document.getElementById("recordInput").value="";
+}
+
+/* --- Render all tables --- */
 renderTable("roster","rosterBody",3);
 renderTable("league","leagueBody",6);
 renderTable("coaches","coachesBody",2);
 
-/* --- Record --- */
-onValue(ref(db,"record"), s=> recordText.textContent = s.val() || "0 - 0 - 0");
+/* --- Team Record --- */
+onValue(ref(db,"record"), s=> document.getElementById("recordText").textContent = s.val() || "0 - 0 - 0");
 
-/* --- News --- */
-function addNews(){
-  const file = newsInput.value.trim();
-  if(!file) return;
-  const newId = Date.now().toString();
-  set(ref(db,"news/"+newId), file);
-  newsInput.value="";
-}
-onValue(ref(db,"news"), snap=>{
-  newsText.innerHTML = "";
-  const items = snap.val() || {};
-  Object.values(items).forEach(f=>{
-    if(f.match(/\.(jpg|jpeg|png|gif)$/i)) newsText.innerHTML += `<img src="assets/${f}" class="news-img"><br>`;
-    else newsText.innerHTML += `<p>${f}</p>`;
-  });
-});
-
-/* --- Clips --- */
-function addClip(){
-  const file = clipsInput.value.trim();
-  if(!file) return;
-  const newId = Date.now().toString();
-  set(ref(db,"clips/"+newId), file);
-  clipsInput.value="";
-}
-onValue(ref(db,"clips"), snap=>{
-  clipsText.innerHTML = "";
-  const items = snap.val() || {};
-  Object.values(items).forEach(f=>{
-    if(f.match(/\.(mp4|webm|ogg)$/i)) clipsText.innerHTML += `<video controls class="clip-video"><source src="assets/${f}" type="video/mp4"></video><br>`;
-    else clipsText.innerHTML += `<a class="link" href="assets/${f}" target="_blank">${f}</a><br>`;
-  });
-});
 </script>
-
 </body>
 </html>
