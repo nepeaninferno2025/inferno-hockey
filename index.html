@@ -32,20 +32,27 @@ header{
   flex-wrap:wrap;
 }
 .brand{display:flex;align-items:center;gap:20px}
-.brand img{height:80px}
+.brand img{height:70px}
 .brand span{font-size:14px;color:#ffe1e1}
 
 /* NAV */
-nav{display:flex;gap:20px;flex-wrap:wrap}
+nav{display:flex;gap:18px;align-items:center;flex-wrap:wrap}
 nav a{
   color:#fff;
   font-weight:600;
   cursor:pointer;
   text-decoration:none;
+  font-size:14px;
+}
+nav a.admin{
+  padding:6px 12px;
+  border:1px solid #fff;
+  border-radius:20px;
+  font-size:13px;
 }
 
 /* LAYOUT */
-main{max-width:1200px;margin:auto;padding:50px 20px}
+main{max-width:1200px;margin:auto;padding:40px 20px}
 section{display:none}
 section.active{display:block}
 
@@ -55,7 +62,6 @@ section.active{display:block}
   padding:30px;
   border-radius:14px;
   box-shadow:0 12px 30px rgba(0,0,0,.45);
-  margin-bottom:30px;
 }
 h2{
   margin-top:0;
@@ -75,14 +81,13 @@ th,td{
   text-align:center;
 }
 th{background:#111;color:#ff4500}
-td{color:#ddd}
 
 /* ADMIN */
 .admin-only{display:none}
 textarea,input,button{
   width:100%;
   margin-top:12px;
-  padding:12px;
+  padding:10px;
   border-radius:8px;
   border:none;
 }
@@ -115,19 +120,6 @@ button{
 /* LINKS */
 a.link{color:#ff7a3d;text-decoration:none}
 a.link:hover{text-decoration:underline}
-
-/* ADMIN BUTTON */
-#adminBtn{
-  position:fixed;
-  bottom:20px;
-  right:20px;
-  padding:12px 18px;
-  border-radius:40px;
-  background:var(--accent);
-  border:none;
-  font-weight:700;
-  cursor:pointer;
-}
 </style>
 </head>
 
@@ -144,33 +136,33 @@ a.link:hover{text-decoration:underline}
 
   <nav>
     <a onclick="show('news')">News</a>
+    <a onclick="show('clips')">Clips</a>
     <a onclick="show('roster')">Roster</a>
     <a onclick="show('league')">League</a>
     <a onclick="show('coaches')">Coaches</a>
-    <a onclick="show('clips')">Clips</a>
+    <a class="admin" onclick="show('admin')">Admin</a>
   </nav>
 </header>
 
-<button id="adminBtn" onclick="show('admin')">Admin</button>
-
 <main>
-
-<section id="admin">
-  <div class="card">
-    <input id="user" placeholder="Username">
-    <input id="pass" type="password" placeholder="Password">
-    <button onclick="login()">Login</button>
-  </div>
-</section>
 
 <!-- NEWS -->
 <section id="news" class="active">
   <div class="card">
     <h2>Team News</h2>
     <pre id="newsText"></pre>
-    <textarea id="newsInput" class="admin-only"
-      placeholder="One news item per line"></textarea>
-    <button class="admin-only" onclick="save('news')">Save News</button>
+    <textarea id="newsInput" class="admin-only"></textarea>
+    <button class="admin-only" onclick="save('news')">Save</button>
+  </div>
+</section>
+
+<!-- CLIPS -->
+<section id="clips">
+  <div class="card">
+    <h2>Clips</h2>
+    <div id="clipsText"></div>
+    <textarea id="clipsInput" class="admin-only"></textarea>
+    <button class="admin-only" onclick="save('clips')">Save</button>
   </div>
 </section>
 
@@ -179,14 +171,12 @@ a.link:hover{text-decoration:underline}
   <div class="card">
     <h2>Player Roster</h2>
     <table id="rosterTable">
-      <thead>
-        <tr><th>Name</th><th>Position</th><th>#</th></tr>
-      </thead>
+      <thead><tr><th>Name</th><th>Position</th><th>#</th></tr></thead>
       <tbody></tbody>
     </table>
     <textarea id="rosterInput" class="admin-only"
       placeholder="Name | Position | Number"></textarea>
-    <button class="admin-only" onclick="save('roster')">Save Roster</button>
+    <button class="admin-only" onclick="save('roster')">Save</button>
   </div>
 </section>
 
@@ -204,25 +194,19 @@ a.link:hover{text-decoration:underline}
       <div class="record-season">2025–2026</div>
       <div class="record-team">U15 HB Team I</div>
 
-      <textarea id="recordInput" class="admin-only"
-        placeholder="Wins - Losses - Ties"></textarea>
+      <textarea id="recordInput" class="admin-only"></textarea>
       <button class="admin-only" onclick="save('record')">Save Record</button>
     </div>
 
     <h2>League Standings</h2>
     <table id="leagueTable">
       <thead>
-        <tr>
-          <th>Team</th><th>GP</th><th>W</th><th>L</th><th>T</th><th>PTS</th>
-        </tr>
+        <tr><th>Team</th><th>GP</th><th>W</th><th>L</th><th>T</th><th>PTS</th></tr>
       </thead>
       <tbody></tbody>
     </table>
-
-    <textarea id="leagueInput" class="admin-only"
-      placeholder="Team | GP | W | L | T | PTS"></textarea>
-    <button class="admin-only" onclick="save('league')">Save Standings</button>
-
+    <textarea id="leagueInput" class="admin-only"></textarea>
+    <button class="admin-only" onclick="save('league')">Save</button>
   </div>
 </section>
 
@@ -231,26 +215,21 @@ a.link:hover{text-decoration:underline}
   <div class="card">
     <h2>Coaching Staff</h2>
     <table id="coachesTable">
-      <thead>
-        <tr><th>Name</th><th>Role</th></tr>
-      </thead>
+      <thead><tr><th>Name</th><th>Role</th></tr></thead>
       <tbody></tbody>
     </table>
-
-    <textarea id="coachesInput" class="admin-only"
-      placeholder="Name | Role"></textarea>
-    <button class="admin-only" onclick="save('coaches')">Save Coaches</button>
+    <textarea id="coachesInput" class="admin-only"></textarea>
+    <button class="admin-only" onclick="save('coaches')">Save</button>
   </div>
 </section>
 
-<!-- CLIPS -->
-<section id="clips">
+<!-- ADMIN (LAST) -->
+<section id="admin">
   <div class="card">
-    <h2>Clips</h2>
-    <div id="clipsText"></div>
-    <textarea id="clipsInput" class="admin-only"
-      placeholder="Paste video links (one per line)"></textarea>
-    <button class="admin-only" onclick="save('clips')">Save Clips</button>
+    <h2>Admin Login</h2>
+    <input id="user" placeholder="Username">
+    <input id="pass" type="password" placeholder="Password">
+    <button onclick="login()">Login</button>
   </div>
 </section>
 
@@ -276,8 +255,10 @@ window.show=id=>{
 };
 
 window.login=()=>{
-  if(user.value!==ADMIN_USER||pass.value!==ADMIN_PASS) return alert("Wrong login");
+  if(user.value!==ADMIN_USER||pass.value!==ADMIN_PASS)
+    return alert("Incorrect login");
   document.querySelectorAll(".admin-only").forEach(e=>e.style.display="block");
+  alert("Admin mode enabled");
 };
 
 const render=(id,cols)=>{
@@ -287,9 +268,8 @@ const render=(id,cols)=>{
     table.innerHTML="";
     (s.val()||"").split("\n").forEach(r=>{
       const c=r.split("|").map(x=>x.trim());
-      if(c.length===cols){
+      if(c.length===cols)
         table.innerHTML+=`<tr>${c.map(v=>`<td>${v}</td>`).join("")}</tr>`;
-      }
     });
   });
 };
@@ -301,16 +281,11 @@ render("coaches",2);
 onValue(ref(db,"record"),s=>{
   recordText.textContent=s.val()||"0 - 0 - 0";
 });
-
-onValue(ref(db,"news"),s=>{
-  newsText.textContent=s.val()||"";
-});
-
+onValue(ref(db,"news"),s=>newsText.textContent=s.val()||"");
 onValue(ref(db,"clips"),s=>{
   clipsText.innerHTML="";
   (s.val()||"").split("\n").forEach(v=>{
-    if(v) clipsText.innerHTML+=
-      `<a class="link" href="${v}" target="_blank">${v}</a><br>`;
+    if(v) clipsText.innerHTML+=`<a class="link" href="${v}" target="_blank">${v}</a><br>`;
   });
 });
 
