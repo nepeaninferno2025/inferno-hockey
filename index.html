@@ -27,8 +27,8 @@ header{
   background:linear-gradient(90deg,#8b0000,#ff4500);
   padding:20px 40px;
   display:flex;
-  justify-content:space-between;
   align-items:center;
+  justify-content:space-between;
   flex-wrap:wrap;
 }
 .brand{
@@ -99,11 +99,39 @@ button{
 }
 button:hover{opacity:.9}
 
-/* RECORD */
-.record{
-  font-size:22px;
-  font-weight:700;
-  margin-bottom:10px;
+/* TEAM RECORD */
+.team-record{text-align:center}
+.record-header{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:14px;
+  margin-bottom:12px;
+}
+.record-header .bar{
+  flex:1;
+  max-width:120px;
+  height:6px;
+  background:#000;
+}
+.record-title{
+  font-weight:900;
+  color:#ff0000;
+  letter-spacing:2px;
+}
+.record-score{
+  font-size:36px;
+  font-weight:900;
+  color:#ff0000;
+}
+.record-season{
+  font-size:14px;
+  color:#777;
+}
+.record-team{
+  font-size:14px;
+  color:#aaa;
+  margin-bottom:12px;
 }
 
 /* ADMIN BUTTON */
@@ -111,11 +139,11 @@ button:hover{opacity:.9}
   position:fixed;
   bottom:20px;
   right:20px;
-  border-radius:40px;
   padding:12px 18px;
+  border-radius:40px;
   background:var(--accent);
-  font-weight:700;
   border:none;
+  font-weight:700;
   cursor:pointer;
 }
 
@@ -126,6 +154,7 @@ footer{
   text-align:center;
   color:#777;
 }
+
 a.link{color:#ff7a3d;text-decoration:none}
 a.link:hover{text-decoration:underline}
 </style>
@@ -138,9 +167,10 @@ a.link:hover{text-decoration:underline}
     <img src="assets/inferno-logo.png">
     <div>
       <h1>Inferno Nepean Hockey</h1>
-      <span>Competitive • Disciplined • Relentless</span>
+      <span>Loyalty • Trust • Commitment</span>
     </div>
   </div>
+
   <nav>
     <a onclick="show('about')">About</a>
     <a onclick="show('news')">News</a>
@@ -194,22 +224,31 @@ a.link:hover{text-decoration:underline}
 
 <section id="league">
   <div class="card">
-    <h2>League Standings</h2>
 
-    <div class="record">
-      Record: <span id="recordText">0 - 0 - 0</span>
+    <div class="team-record">
+      <div class="record-header">
+        <span class="bar"></span>
+        <span class="record-title">TEAM RECORD</span>
+        <span class="bar"></span>
+      </div>
+
+      <div class="record-score" id="recordText">0 - 0 - 0</div>
+      <div class="record-season">2025–2026</div>
+      <div class="record-team">U15 HB Team I</div>
+
+      <textarea id="recordInput" class="admin-only"
+        placeholder="Wins - Losses - Ties (example: 7 - 0 - 2)"></textarea>
+      <button class="admin-only" onclick="save('record')">Save Record</button>
     </div>
 
+    <hr style="margin:30px 0;border-color:#222">
+
+    <h2>League Standings</h2>
     <pre id="leagueText"></pre>
-
-    <textarea id="recordInput" class="admin-only"
-      placeholder="Wins - Losses - Ties (example: 7 - 0 - 2)"></textarea>
-
     <textarea id="leagueInput" class="admin-only"
       placeholder="Team | GP | W | L | T | PTS"></textarea>
-
-    <button class="admin-only" onclick="save('record')">Save Record</button>
     <button class="admin-only" onclick="save('league')">Save Standings</button>
+
   </div>
 </section>
 
@@ -217,8 +256,7 @@ a.link:hover{text-decoration:underline}
   <div class="card">
     <h2>Coaching Staff</h2>
     <pre id="coachesText"></pre>
-    <textarea id="coachesInput" class="admin-only"
-      placeholder="Head Coach | Assistant | Trainer"></textarea>
+    <textarea id="coachesInput" class="admin-only"></textarea>
     <button class="admin-only" onclick="save('coaches')">Save</button>
   </div>
 </section>
@@ -280,7 +318,8 @@ window.save=k=>set(ref(db,k),document.getElementById(k+"Input").value);
 onValue(ref(db,"videos"),s=>{
   videosText.innerHTML="";
   (s.val()||"").split("\n").forEach(v=>{
-    if(v) videosText.innerHTML+=`<a class="link" href="${v}" target="_blank">${v}</a><br>`;
+    if(v) videosText.innerHTML+=
+      `<a class="link" href="${v}" target="_blank">${v}</a><br>`;
   });
 });
 window.saveVideos=()=>set(ref(db,"videos"),videosInput.value);
