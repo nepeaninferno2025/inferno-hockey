@@ -11,7 +11,6 @@
   --card:#171717;
   --accent:#ff4500;
   --text:#f2f2f2;
-  --muted:#b5b5b5;
 }
 
 *{box-sizing:border-box}
@@ -25,18 +24,17 @@ body{
 /* HEADER */
 header{
   background:linear-gradient(90deg,#8b0000,#ff4500);
-  padding:20px 40px;
+  padding:18px 40px;
   display:flex;
   justify-content:space-between;
   align-items:center;
-  flex-wrap:wrap;
 }
-.brand{display:flex;align-items:center;gap:20px}
+.brand{display:flex;gap:18px;align-items:center}
 .brand img{height:70px}
 .brand span{font-size:14px;color:#ffe1e1}
 
 /* NAV */
-nav{display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+nav{display:flex;gap:18px;align-items:center}
 nav a{
   color:#fff;
   font-weight:600;
@@ -45,10 +43,16 @@ nav a{
   font-size:14px;
 }
 nav a.admin{
-  padding:6px 12px;
   border:1px solid #fff;
+  padding:5px 12px;
   border-radius:20px;
-  font-size:13px;
+}
+nav a.logout{
+  border:1px solid #ff4500;
+  color:#ff4500;
+  padding:5px 12px;
+  border-radius:20px;
+  display:none;
 }
 
 /* LAYOUT */
@@ -80,7 +84,10 @@ th,td{
   padding:10px;
   text-align:center;
 }
-th{background:#111;color:#ff4500}
+th{
+  background:#111;
+  color:#ff4500;
+}
 
 /* ADMIN */
 .admin-only{display:none}
@@ -98,24 +105,9 @@ button{
   cursor:pointer;
 }
 
-/* TEAM RECORD */
+/* RECORD */
 .team-record{text-align:center;margin-bottom:30px}
-.record-header{
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap:14px;
-}
-.record-header .bar{
-  flex:1;
-  max-width:120px;
-  height:6px;
-  background:#000;
-}
-.record-title{color:#ff0000;font-weight:900;letter-spacing:2px}
 .record-score{font-size:36px;color:#ff0000;font-weight:900}
-.record-season{color:#777}
-.record-team{color:#aaa}
 
 /* LINKS */
 a.link{color:#ff7a3d;text-decoration:none}
@@ -141,6 +133,7 @@ a.link:hover{text-decoration:underline}
     <a onclick="show('league')">League</a>
     <a onclick="show('coaches')">Coaches</a>
     <a class="admin" onclick="show('admin')">Admin</a>
+    <a class="logout" id="logoutBtn" onclick="logout()">Logout</a>
   </nav>
 </header>
 
@@ -170,43 +163,46 @@ a.link:hover{text-decoration:underline}
 <section id="roster">
   <div class="card">
     <h2>Player Roster</h2>
-    <table id="rosterTable">
-      <thead><tr><th>Name</th><th>Position</th><th>#</th></tr></thead>
-      <tbody></tbody>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Position</th>
+          <th>#</th>
+        </tr>
+      </thead>
+      <tbody id="rosterBody"></tbody>
     </table>
+
     <textarea id="rosterInput" class="admin-only"
       placeholder="Name | Position | Number"></textarea>
-    <button class="admin-only" onclick="save('roster')">Save</button>
+    <button class="admin-only" onclick="save('roster')">Save Roster</button>
   </div>
 </section>
 
 <!-- LEAGUE -->
 <section id="league">
   <div class="card">
-
     <div class="team-record">
-      <div class="record-header">
-        <span class="bar"></span>
-        <span class="record-title">TEAM RECORD</span>
-        <span class="bar"></span>
-      </div>
       <div class="record-score" id="recordText">0 - 0 - 0</div>
-      <div class="record-season">2025–2026</div>
-      <div class="record-team">U15 HB Team I</div>
-
+      <div>U15 HB Team I • 2025–2026</div>
       <textarea id="recordInput" class="admin-only"></textarea>
       <button class="admin-only" onclick="save('record')">Save Record</button>
     </div>
 
     <h2>League Standings</h2>
-    <table id="leagueTable">
+    <table>
       <thead>
-        <tr><th>Team</th><th>GP</th><th>W</th><th>L</th><th>T</th><th>PTS</th></tr>
+        <tr>
+          <th>Team</th><th>GP</th><th>W</th><th>L</th><th>T</th><th>PTS</th>
+        </tr>
       </thead>
-      <tbody></tbody>
+      <tbody id="leagueBody"></tbody>
     </table>
+
     <textarea id="leagueInput" class="admin-only"></textarea>
-    <button class="admin-only" onclick="save('league')">Save</button>
+    <button class="admin-only" onclick="save('league')">Save Standings</button>
   </div>
 </section>
 
@@ -214,16 +210,20 @@ a.link:hover{text-decoration:underline}
 <section id="coaches">
   <div class="card">
     <h2>Coaching Staff</h2>
-    <table id="coachesTable">
-      <thead><tr><th>Name</th><th>Role</th></tr></thead>
-      <tbody></tbody>
+
+    <table>
+      <thead>
+        <tr><th>Name</th><th>Role</th></tr>
+      </thead>
+      <tbody id="coachesBody"></tbody>
     </table>
+
     <textarea id="coachesInput" class="admin-only"></textarea>
-    <button class="admin-only" onclick="save('coaches')">Save</button>
+    <button class="admin-only" onclick="save('coaches')">Save Coaches</button>
   </div>
 </section>
 
-<!-- ADMIN (LAST) -->
+<!-- ADMIN -->
 <section id="admin">
   <div class="card">
     <h2>Admin Login</h2>
@@ -258,25 +258,32 @@ window.login=()=>{
   if(user.value!==ADMIN_USER||pass.value!==ADMIN_PASS)
     return alert("Incorrect login");
   document.querySelectorAll(".admin-only").forEach(e=>e.style.display="block");
+  logoutBtn.style.display="inline-block";
   alert("Admin mode enabled");
 };
 
-const render=(id,cols)=>{
-  onValue(ref(db,id),s=>{
-    const table=document.querySelector(`#${id}Table tbody`);
-    if(!table) return;
-    table.innerHTML="";
-    (s.val()||"").split("\n").forEach(r=>{
-      const c=r.split("|").map(x=>x.trim());
+window.logout=()=>{
+  document.querySelectorAll(".admin-only").forEach(e=>e.style.display="none");
+  logoutBtn.style.display="none";
+  show("news");
+};
+
+/* RENDER TABLES */
+const renderTable=(key,bodyId,cols)=>{
+  onValue(ref(db,key),s=>{
+    const body=document.getElementById(bodyId);
+    body.innerHTML="";
+    (s.val()||"").split("\n").forEach(row=>{
+      const c=row.split("|").map(x=>x.trim());
       if(c.length===cols)
-        table.innerHTML+=`<tr>${c.map(v=>`<td>${v}</td>`).join("")}</tr>`;
+        body.innerHTML+=`<tr>${c.map(v=>`<td>${v}</td>`).join("")}</tr>`;
     });
   });
 };
 
-render("roster",3);
-render("league",6);
-render("coaches",2);
+renderTable("roster","rosterBody",3);
+renderTable("league","leagueBody",6);
+renderTable("coaches","coachesBody",2);
 
 onValue(ref(db,"record"),s=>{
   recordText.textContent=s.val()||"0 - 0 - 0";
