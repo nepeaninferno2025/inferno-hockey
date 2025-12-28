@@ -5,7 +5,6 @@
 <title>Inferno Nepean Hockey</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<!-- Favicon -->
 <link rel="icon" href="assets/inferno-logo.png" type="image/png">
 
 <style>
@@ -42,17 +41,11 @@ textarea,input,button{width:100%;margin-top:12px;padding:10px;border-radius:8px;
 textarea,input{background:#0f0f0f;color:#fff}
 button{background:var(--accent);font-weight:700;cursor:pointer;}
 
-.team-record{text-align:center;margin-bottom:30px}
-.record-score{font-size:36px;color:#ff0000;font-weight:900}
-
 .action-btn{padding:3px 6px;margin:0 2px;border:none;border-radius:6px;cursor:pointer;}
 .edit-btn{background:orange;color:#000}
 .delete-btn{background:red;color:#fff}
 .save-btn{background:green;color:#fff}
 .cancel-btn{background:#888;color:#fff}
-
-a.link{color:#ff7a3d;text-decoration:none}
-a.link:hover{text-decoration:underline}
 </style>
 </head>
 
@@ -66,7 +59,6 @@ a.link:hover{text-decoration:underline}
       <span>Loyalty • Trust • Commitment</span>
     </div>
   </div>
-
   <nav>
     <a onclick="show('roster')">Roster</a>
     <a onclick="show('league')">League</a>
@@ -79,14 +71,11 @@ a.link:hover{text-decoration:underline}
 
 <main>
 
-<!-- ROSTER -->
-<section id="roster">
+<section id="roster" class="active">
   <div class="card">
     <h2>Player Roster</h2>
     <table>
-      <thead>
-        <tr><th>Name</th><th>Position</th><th>#</th><th>Actions</th></tr>
-      </thead>
+      <thead><tr><th>Name</th><th>Position</th><th>#</th><th>Actions</th></tr></thead>
       <tbody id="rosterBody"></tbody>
     </table>
     <textarea id="rosterInput" class="admin-only" placeholder="Name | Position | Number"></textarea>
@@ -94,7 +83,6 @@ a.link:hover{text-decoration:underline}
   </div>
 </section>
 
-<!-- LEAGUE -->
 <section id="league">
   <div class="card">
     <h2>League Standings</h2>
@@ -109,7 +97,6 @@ a.link:hover{text-decoration:underline}
   </div>
 </section>
 
-<!-- COACHES -->
 <section id="coaches">
   <div class="card">
     <h2>Coaching Staff</h2>
@@ -122,20 +109,15 @@ a.link:hover{text-decoration:underline}
   </div>
 </section>
 
-<!-- TEAM RECORD -->
 <section id="record">
   <div class="card">
     <h2>Team Record</h2>
-    <div class="team-record">
-      <div class="record-score" id="recordText">0 - 0 - 0</div>
-      <div>U15 HB Team I • 2025–2026</div>
-      <textarea id="recordInput" class="admin-only" placeholder="Format: W-L-T"></textarea>
-      <button class="admin-only" onclick="saveRecord()">Save Record</button>
-    </div>
+    <h1 id="recordText">0 - 0 - 0</h1>
+    <textarea id="recordInput" class="admin-only" placeholder="W-L-T"></textarea>
+    <button class="admin-only" onclick="saveRecord()">Save Record</button>
   </div>
 </section>
 
-<!-- ADMIN LOGIN -->
 <section id="admin">
   <div class="card">
     <h2>Admin Login</h2>
@@ -160,192 +142,103 @@ const db = getDatabase(app);
 
 const ADMIN_USER="athenadmin";
 const ADMIN_PASS="AthFon32";
-let isAdmin = false; // track admin login
+let isAdmin=false;
 
-window.show = id => {
-  document.querySelectorAll("section").forEach(s => s.classList.remove("active"));
+window.show=id=>{
+  document.querySelectorAll("section").forEach(s=>s.classList.remove("active"));
   document.getElementById(id).classList.add("active");
 };
 
-window.login = () => {
-  if(user.value!==ADMIN_USER || pass.value!==ADMIN_PASS)
-    return alert("Incorrect login");
-  isAdmin = true;
-  document.querySelectorAll(".admin-only").forEach(e => e.style.display="block");
+window.login=()=>{
+  if(user.value!==ADMIN_USER||pass.value!==ADMIN_PASS) return alert("Wrong login");
+  isAdmin=true;
+  document.querySelectorAll(".admin-only").forEach(e=>e.style.display="block");
   logoutBtn.style.display="inline-block";
-  alert("Admin mode enabled");
-  renderAllTables();
+  renderAll();
 };
 
-window.logout = () => {
-  isAdmin = false;
-  document.querySelectorAll(".admin-only").forEach(e => e.style.display="none");
+window.logout=()=>{
+  isAdmin=false;
+  document.querySelectorAll(".admin-only").forEach(e=>e.style.display="none");
   logoutBtn.style.display="none";
   show("roster");
-  renderAllTables();
+  renderAll();
 };
 
-/* --- Tables --- */
-function renderTable(key, bodyId, cols){
-  onValue(ref(db,key), snap=>{
-    const body = document.getElementById(bodyId);
-    body.innerHTML = "";
-    const data = snap.val() || {};
-    Object.keys(data).forEach(id => {
-      const row = data[id].split("|").map(x=>x.trim());
-      if(row.length===cols){
-        const tr = document.createElement("tr");
-        tr.setAttribute("data-id", id);
-        tr.innerHTML = row.map(v=>`<td>${v}</td>`).join("");
-
-        // Admin action buttons
-        if(isAdmin){
-          tr.innerHTML += `<td>
-            <button class="action-btn edit-btn" onclick="editRow('${key}','${id}')">Edit</button>
-            <button class="action-btn delete-btn" onclick="deleteRow('${key}','${id}')">Delete</button>
-          </td>`;
-        } else {
-          tr.innerHTML += `<td>--</td>`;
-        }
-
-        body.appendChild(tr);
-      }
-    });
-  });
-}
-
-function renderAllTables(){
-  renderTable("roster","rosterBody",3);
-  renderTable("league","leagueBody",6);
-  renderTable("coaches","coachesBody",2);
-}
-
-/* --- Edit in place --- */
-window.editRow = (key,id)=>{
-  if(!isAdmin) return alert("You must be an admin to edit!");
-  const row = document.querySelector(`#${key}Body tr[data-id='${id}']`);
-  if(!row) return;
-
-  const cells = Array.from(row.children).slice(0,row.children.length-1);
-  const originalValues = cells.map(td => td.textContent);
-
-  // Convert cells to inputs
-  cells.forEach((td,i)=> td.innerHTML = `<input value="${td.textContent}" style="width:100%;">`);
-
-  // Replace buttons
-  const actionCell = row.children[row.children.length-1];
-  actionCell.innerHTML = `
-    <button class="action-btn save-btn" onclick="saveRow('${key}','${id}')">Save</button>
-    <button class="action-btn cancel-btn" onclick="cancelEdit('${key}','${id}', [${originalValues.map(v=>`'${v}'`).join(",")}])">Cancel</button>
-  `;
-};
-
-window.saveRow = (key,id)=>{
-  if(!isAdmin) return alert("You must be an admin to save!");
-  const row = document.querySelector(`#${key}Body tr[data-id='${id}']`);
-  if(!row) return;
-
-  const inputs = Array.from(row.querySelectorAll('input'));
-  const newValue = inputs.map(input=>input.value.trim()).join(" | ");
-  if(!newValue) return;
-
-  set(ref(db, key+"/"+id), newValue);
-};
-
-window.cancelEdit = (key,id,originalValues)=>{
-  if(!isAdmin) return;
-  const row = document.querySelector(`#${key}Body tr[data-id='${id}']`);
-  if(!row) return;
-
-  const cells = Array.from(row.children).slice(0,row.children.length-1);
-  cells.forEach((td,i)=> td.textContent = originalValues[i]);
-
-  const actionCell = row.children[row.children.length-1];
-  actionCell.innerHTML = `
-    <button class="action-btn edit-btn" onclick="editRow('${key}','${id}')">Edit</button>
-    <button class="action-btn delete-btn" onclick="deleteRow('${key}','${id}')">Delete</button>
-  `;
-};
-
-/* --- Delete / Save --- */
-window.deleteRow = (key,id)=>{
-  if(!isAdmin) return alert("You must be an admin to delete!");
-  if(confirm("Delete this entry?")) remove(ref(db,key+"/"+id));
-};
-
-window.save = (key)=>{
-  if(!isAdmin) return alert("You must be an admin to add entries!");
-  const input = document.getElementById(key+"Input");
-  if(!input.value.trim()) return;
-  const newId = Date.now().toString();
-  set(ref(db,key+"/"+newId), input.value);
-  input.value="";
-};
-
-function saveRecord(){
-  if(!isAdmin) return alert("You must be an admin to edit the record!");
-  const val = document.getElementById("recordInput").value.trim();
-  if(!val) return;
-  set(ref(db,"record"), val);
-  document.getElementById("recordInput").value="";
-}
-
-/* --- Initial render --- */
-function renderTable(key, bodyId, cols){
-  onValue(ref(db,key), snap=>{
-    const body = document.getElementById(bodyId);
-    body.innerHTML = "";
-    const data = snap.val() || {};
-
-    let rows = [];
-
-    Object.keys(data).forEach(id => {
-      const row = data[id].split("|").map(x=>x.trim());
-      if(row.length === cols){
-        rows.push({ id, row });
-      }
+function render(key,bodyId,cols){
+  onValue(ref(db,key),snap=>{
+    const body=document.getElementById(bodyId);
+    body.innerHTML="";
+    let rows=[];
+    const data=snap.val()||{};
+    Object.keys(data).forEach(id=>{
+      const row=data[id].split("|").map(x=>x.trim());
+      if(row.length===cols) rows.push({id,row});
     });
 
-    // 🔥 SORT ONLY LEAGUE STANDINGS
-    if(key === "league"){
+    if(key==="league"){
       rows.sort((a,b)=>{
-        const ptsA = parseInt(a.row[5]) || 0;
-        const ptsB = parseInt(b.row[5]) || 0;
-        if(ptsB !== ptsA) return ptsB - ptsA;
-
-        const wA = parseInt(a.row[2]) || 0;
-        const wB = parseInt(b.row[2]) || 0;
-        if(wB !== wA) return wB - wA;
-
-        const tA = parseInt(a.row[4]) || 0;
-        const tB = parseInt(b.row[4]) || 0;
-        if(tB !== tA) return tB - tA;
-
-        return a.row[0].localeCompare(b.row[0]);
+        return (parseInt(b.row[5])||0)-(parseInt(a.row[5])||0);
       });
     }
 
-    // Render rows
     rows.forEach(({id,row})=>{
-      const tr = document.createElement("tr");
-      tr.setAttribute("data-id", id);
-      tr.innerHTML = row.map(v=>`<td>${v}</td>`).join("");
-
-      if(isAdmin){
-        tr.innerHTML += `<td>
-          <button class="action-btn edit-btn" onclick="editRow('${key}','${id}')">Edit</button>
-          <button class="action-btn delete-btn" onclick="deleteRow('${key}','${id}')">Delete</button>
-        </td>`;
-      } else {
-        tr.innerHTML += `<td>--</td>`;
-      }
-
+      const tr=document.createElement("tr");
+      tr.dataset.id=id;
+      tr.innerHTML=row.map(v=>`<td>${v}</td>`).join("")+
+        `<td>${isAdmin?`
+        <button class="action-btn edit-btn" onclick="edit('${key}','${id}')">Edit</button>
+        <button class="action-btn delete-btn" onclick="del('${key}','${id}')">Delete</button>
+        `:"--"}</td>`;
       body.appendChild(tr);
     });
   });
 }
 
+function renderAll(){
+  render("roster","rosterBody",3);
+  render("league","leagueBody",6);
+  render("coaches","coachesBody",2);
+}
+
+window.save=key=>{
+  if(!isAdmin) return;
+  const i=document.getElementById(key+"Input");
+  if(!i.value.trim()) return;
+  set(ref(db,key+"/"+Date.now()),i.value);
+  i.value="";
+};
+
+window.del=(key,id)=>{
+  if(confirm("Delete?")) remove(ref(db,key+"/"+id));
+};
+
+window.edit=(key,id)=>{
+  const row=document.querySelector(`#${key}Body tr[data-id='${id}']`);
+  const cells=[...row.children].slice(0,-1);
+  const vals=cells.map(c=>c.textContent);
+  cells.forEach((c,i)=>c.innerHTML=`<input value="${vals[i]}">`);
+  row.lastChild.innerHTML=`
+    <button class="action-btn save-btn" onclick="saveEdit('${key}','${id}')">Save</button>
+    <button class="action-btn cancel-btn" onclick="renderAll()">Cancel</button>`;
+};
+
+window.saveEdit=(key,id)=>{
+  const row=document.querySelector(`#${key}Body tr[data-id='${id}']`);
+  const vals=[...row.querySelectorAll("input")].map(i=>i.value);
+  set(ref(db,key+"/"+id),vals.join(" | "));
+};
+
+window.saveRecord=()=>{
+  set(ref(db,"record"),recordInput.value);
+};
+
+onValue(ref(db,"record"),s=>{
+  recordText.textContent=s.val()||"0 - 0 - 0";
+});
+
+renderAll();
 </script>
+
 </body>
 </html>
-
