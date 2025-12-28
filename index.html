@@ -7,8 +7,16 @@
 <link rel="icon" href="assets/inferno-logo.png" type="image/png">
 
 <!-- Firebase -->
-<script type="module" src="https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js"></script>
-<script type="module" src="https://www.gstatic.com/firebasejs/12.7.0/firebase-database.js"></script>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
+  import { getDatabase, ref, set, onValue, remove } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-database.js";
+  window.firebaseApp = initializeApp({
+    apiKey:"AIzaSyCcl7fjelmFRMSNqrNfCTSEJxJcxj7lano",
+    databaseURL:"https://infernohockey-b39f9-default-rtdb.firebaseio.com",
+    projectId:"infernohockey-b39f9"
+  });
+  window.db = getDatabase(window.firebaseApp);
+</script>
 
 <!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -192,32 +200,27 @@ a.link:hover{text-decoration:underline;}
 </div>
 
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
-import { getDatabase, ref, set, onValue, remove } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-database.js";
+// Firebase functions
+import { ref, set, onValue, remove } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-database.js";
+const db = window.db;
 
-const app = initializeApp({
-  apiKey:"AIzaSyCcl7fjelmFRMSNqrNfCTSEJxJcxj7lano",
-  databaseURL:"https://infernohockey-b39f9-default-rtdb.firebaseio.com",
-  projectId:"infernohockey-b39f9"
-});
-const db = getDatabase(app);
-
+// Admin
 const ADMIN_USER="athenadmin";
 const ADMIN_PASS="AthFon32";
 let isAdmin = false;
 
-// --- Show Section ---
+// Show sections
 window.show = id=>{
   document.querySelectorAll("section").forEach(s=>s.classList.remove("active"));
   const section = document.getElementById(id);
   if(section) section.classList.add("active");
 };
-document.addEventListener("DOMContentLoaded",()=>{ show("roster"); });
+document.addEventListener("DOMContentLoaded",()=>{ show("roster"); renderAllTables(); });
 
-// --- Admin Login/Logout ---
+// Login/Logout
 window.login = ()=>{
-  if(user.value!==ADMIN_USER || pass.value!==ADMIN_PASS) return alert("Incorrect login");
-  isAdmin = true;
+  if(user.value!==ADMIN_USER||pass.value!==ADMIN_PASS) return alert("Incorrect login");
+  isAdmin=true;
   document.querySelectorAll(".admin-only").forEach(e=>e.style.display="block");
   logoutBtn.style.display="inline-block";
   alert("Admin mode enabled");
@@ -231,24 +234,23 @@ window.logout = ()=>{
   renderAllTables();
 };
 
-// --- Generic Table Renderer ---
+// Generic Table Renderer
 function renderTable(key, bodyId, cols){
   onValue(ref(db,key), snap=>{
-    const body = document.getElementById(bodyId);
+    const body=document.getElementById(bodyId);
     body.innerHTML="";
-    const data = snap.val() || {};
+    const data=snap.val()||{};
     Object.keys(data).forEach(id=>{
-      const row = data[id].split("|").map(x=>x.trim());
+      const row=data[id].split("|").map(x=>x.trim());
       if(row.length===cols){
-        const tr = document.createElement("tr");
+        const tr=document.createElement("tr");
         tr.setAttribute("data-id",id);
         tr.innerHTML=row.map(v=>`<td>${v}</td>`).join("");
-        if(isAdmin){
-          tr.innerHTML+=`<td>
-            <button class="action-btn edit-btn" onclick="editRow('${key}','${id}')">Edit</button>
-            <button class="action-btn delete-btn" onclick="deleteRow('${key}','${id}')">Delete</button>
-          </td>`;
-        } else tr.innerHTML+="<td>--</td>";
+        if(isAdmin) tr.innerHTML+=`<td>
+          <button class="action-btn edit-btn" onclick="editRow('${key}','${id}')">Edit</button>
+          <button class="action-btn delete-btn" onclick="deleteRow('${key}','${id}')">Delete</button>
+        </td>`;
+        else tr.innerHTML+="<td>--</td>";
         body.appendChild(tr);
       }
     });
@@ -265,8 +267,9 @@ function renderAllTables(){
   renderBanner();
 }
 
-// The rest of the edit/delete/save functions and chart/banner code are identical to the previous working version.
-
+// Rest of edit/delete/save functions go here (same as previous working code)
+// League chart & banner functions go here
 </script>
+
 </body>
 </html>
