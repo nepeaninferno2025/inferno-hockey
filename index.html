@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <title>Inferno Nepean Hockey</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <link rel="icon" href="assets/inferno-logo.png" type="image/png">
 
 <style>
@@ -15,37 +14,35 @@
   --text:#f2f2f2;
 }
 *{box-sizing:border-box}
-body{margin:0;font-family:"Segoe UI",Arial,sans-serif;background:var(--dark);color:var(--text);}
-header{background:linear-gradient(90deg,#8b0000,#ff4500);padding:18px 40px;display:flex;justify-content:space-between;align-items:center;}
+body{margin:0;font-family:Segoe UI,Arial;background:var(--dark);color:var(--text)}
+header{background:linear-gradient(90deg,#8b0000,#ff4500);padding:18px 40px;display:flex;justify-content:space-between;align-items:center}
 .brand{display:flex;gap:18px;align-items:center}
 .brand img{height:70px}
-.brand span{font-size:14px;color:#ffe1e1}
-nav{display:flex;gap:18px;align-items:center}
-nav a{color:#fff;font-weight:600;cursor:pointer;text-decoration:none;font-size:14px;}
-nav a.admin{border:1px solid #fff;padding:5px 12px;border-radius:20px;}
-nav a.logout{border:1px solid #ff4500;color:#ff4500;padding:5px 12px;border-radius:20px;display:none;}
+nav a{color:#fff;margin-left:18px;font-weight:600;cursor:pointer;text-decoration:none}
+nav a.admin{border:1px solid #fff;padding:5px 12px;border-radius:20px}
+nav a.logout{display:none;border:1px solid var(--accent);color:var(--accent);padding:5px 12px;border-radius:20px}
 
 main{max-width:1200px;margin:auto;padding:40px 20px}
 section{display:none}
 section.active{display:block}
 
-.card{background:var(--card);padding:30px;border-radius:14px;box-shadow:0 12px 30px rgba(0,0,0,.45);}
-h2{margin-top:0;border-left:6px solid var(--accent);padding-left:14px;}
+.card{background:var(--card);padding:30px;border-radius:14px}
+h2{border-left:6px solid var(--accent);padding-left:14px}
 
-table{width:100%;border-collapse:collapse;margin-top:20px;}
-th,td{border:1px solid #2a2a2a;padding:10px;text-align:center;}
-th{background:#111;color:#ff4500;}
+table{width:100%;border-collapse:collapse;margin-top:20px}
+th,td{border:1px solid #2a2a2a;padding:10px;text-align:center}
+th{background:#111;color:var(--accent)}
 
 .admin-only{display:none}
-textarea,input,button{width:100%;margin-top:12px;padding:10px;border-radius:8px;border:none;}
+textarea,input,button{width:100%;margin-top:12px;padding:10px;border-radius:8px;border:none}
 textarea,input{background:#0f0f0f;color:#fff}
-button{background:var(--accent);font-weight:700;cursor:pointer;}
+button{background:var(--accent);font-weight:700;cursor:pointer}
 
-.action-btn{padding:3px 6px;margin:0 2px;border:none;border-radius:6px;cursor:pointer;}
-.edit-btn{background:orange;color:#000}
+.action-btn{padding:4px 8px;border-radius:6px;border:none;cursor:pointer}
+.edit-btn{background:orange}
 .delete-btn{background:red;color:#fff}
 .save-btn{background:green;color:#fff}
-.cancel-btn{background:#888;color:#fff}
+.cancel-btn{background:#777;color:#fff}
 </style>
 </head>
 
@@ -54,10 +51,7 @@ button{background:var(--accent);font-weight:700;cursor:pointer;}
 <header>
   <div class="brand">
     <img src="assets/inferno-logo.png">
-    <div>
-      <h1>Inferno Nepean Hockey</h1>
-      <span>Loyalty • Trust • Commitment</span>
-    </div>
+    <h1>Inferno Nepean Hockey</h1>
   </div>
   <nav>
     <a onclick="show('roster')">Roster</a>
@@ -73,13 +67,13 @@ button{background:var(--accent);font-weight:700;cursor:pointer;}
 
 <section id="roster" class="active">
   <div class="card">
-    <h2>Player Roster</h2>
+    <h2>Roster</h2>
     <table>
-      <thead><tr><th>Name</th><th>Position</th><th>#</th><th>Actions</th></tr></thead>
+      <thead><tr><th>Name</th><th>Pos</th><th>#</th><th>Actions</th></tr></thead>
       <tbody id="rosterBody"></tbody>
     </table>
-    <textarea id="rosterInput" class="admin-only" placeholder="Name | Position | Number"></textarea>
-    <button class="admin-only" onclick="save('roster')">Add Player</button>
+    <textarea id="rosterInput" class="admin-only" placeholder="Name | Pos | #"></textarea>
+    <button class="admin-only" onclick="save('roster')">Add</button>
   </div>
 </section>
 
@@ -88,24 +82,27 @@ button{background:var(--accent);font-weight:700;cursor:pointer;}
     <h2>League Standings</h2>
     <table>
       <thead>
-        <tr><th>Team</th><th>GP</th><th>W</th><th>L</th><th>T</th><th>PTS</th><th>Actions</th></tr>
+        <tr>
+          <th>Team</th><th>GP</th><th>W</th><th>L</th><th>T</th><th>PTS</th><th>Actions</th>
+        </tr>
       </thead>
       <tbody id="leagueBody"></tbody>
     </table>
-    <textarea id="leagueInput" class="admin-only" placeholder="Team | GP | W | L | T | PTS"></textarea>
-    <button class="admin-only" onclick="save('league')">Add League Entry</button>
+    <textarea id="leagueInput" class="admin-only"
+      placeholder="Team | GP | W | L | T | PTS"></textarea>
+    <button class="admin-only" onclick="save('league')">Add Team</button>
   </div>
 </section>
 
 <section id="coaches">
   <div class="card">
-    <h2>Coaching Staff</h2>
+    <h2>Coaches</h2>
     <table>
       <thead><tr><th>Name</th><th>Role</th><th>Actions</th></tr></thead>
       <tbody id="coachesBody"></tbody>
     </table>
     <textarea id="coachesInput" class="admin-only" placeholder="Name | Role"></textarea>
-    <button class="admin-only" onclick="save('coaches')">Add Coach</button>
+    <button class="admin-only" onclick="save('coaches')">Add</button>
   </div>
 </section>
 
@@ -114,7 +111,7 @@ button{background:var(--accent);font-weight:700;cursor:pointer;}
     <h2>Team Record</h2>
     <h1 id="recordText">0 - 0 - 0</h1>
     <textarea id="recordInput" class="admin-only" placeholder="W-L-T"></textarea>
-    <button class="admin-only" onclick="saveRecord()">Save Record</button>
+    <button class="admin-only" onclick="saveRecord()">Save</button>
   </div>
 </section>
 
@@ -154,7 +151,6 @@ window.login=()=>{
   isAdmin=true;
   document.querySelectorAll(".admin-only").forEach(e=>e.style.display="block");
   logoutBtn.style.display="inline-block";
-  renderAll();
 };
 
 window.logout=()=>{
@@ -162,65 +158,57 @@ window.logout=()=>{
   document.querySelectorAll(".admin-only").forEach(e=>e.style.display="none");
   logoutBtn.style.display="none";
   show("roster");
-  renderAll();
 };
 
-function render(key,bodyId,cols){
+function render(key,body,cols){
   onValue(ref(db,key),snap=>{
-    const body=document.getElementById(bodyId);
-    body.innerHTML="";
+    const el=document.getElementById(body);
+    el.innerHTML="";
     let rows=[];
     const data=snap.val()||{};
     Object.keys(data).forEach(id=>{
-      const row=data[id].split("|").map(x=>x.trim());
+      const row=data[id].split("|").map(v=>v.trim());
       if(row.length===cols) rows.push({id,row});
     });
 
+    // ✅ SORT BY POINTS ONLY
     if(key==="league"){
-      rows.sort((a,b)=>{
-        return (parseInt(b.row[5])||0)-(parseInt(a.row[5])||0);
-      });
+      rows.sort((a,b)=>(parseInt(b.row[5])||0)-(parseInt(a.row[5])||0));
     }
 
     rows.forEach(({id,row})=>{
       const tr=document.createElement("tr");
       tr.dataset.id=id;
       tr.innerHTML=row.map(v=>`<td>${v}</td>`).join("")+
-        `<td>${isAdmin?`
+      `<td>${isAdmin?`
         <button class="action-btn edit-btn" onclick="edit('${key}','${id}')">Edit</button>
         <button class="action-btn delete-btn" onclick="del('${key}','${id}')">Delete</button>
-        `:"--"}</td>`;
-      body.appendChild(tr);
+      `:"--"}</td>`;
+      el.appendChild(tr);
     });
   });
 }
 
-function renderAll(){
-  render("roster","rosterBody",3);
-  render("league","leagueBody",6);
-  render("coaches","coachesBody",2);
-}
+render("roster","rosterBody",3);
+render("league","leagueBody",6);
+render("coaches","coachesBody",2);
 
 window.save=key=>{
-  if(!isAdmin) return;
   const i=document.getElementById(key+"Input");
   if(!i.value.trim()) return;
   set(ref(db,key+"/"+Date.now()),i.value);
   i.value="";
 };
 
-window.del=(key,id)=>{
-  if(confirm("Delete?")) remove(ref(db,key+"/"+id));
-};
+window.del=(key,id)=>remove(ref(db,key+"/"+id));
 
 window.edit=(key,id)=>{
   const row=document.querySelector(`#${key}Body tr[data-id='${id}']`);
-  const cells=[...row.children].slice(0,-1);
-  const vals=cells.map(c=>c.textContent);
-  cells.forEach((c,i)=>c.innerHTML=`<input value="${vals[i]}">`);
+  const vals=[...row.children].slice(0,-1).map(td=>td.textContent);
+  [...row.children].slice(0,-1).forEach((td,i)=>td.innerHTML=`<input value="${vals[i]}">`);
   row.lastChild.innerHTML=`
     <button class="action-btn save-btn" onclick="saveEdit('${key}','${id}')">Save</button>
-    <button class="action-btn cancel-btn" onclick="renderAll()">Cancel</button>`;
+    <button class="action-btn cancel-btn" onclick="location.reload()">Cancel</button>`;
 };
 
 window.saveEdit=(key,id)=>{
@@ -229,15 +217,9 @@ window.saveEdit=(key,id)=>{
   set(ref(db,key+"/"+id),vals.join(" | "));
 };
 
-window.saveRecord=()=>{
-  set(ref(db,"record"),recordInput.value);
-};
+window.saveRecord=()=>set(ref(db,"record"),recordInput.value);
 
-onValue(ref(db,"record"),s=>{
-  recordText.textContent=s.val()||"0 - 0 - 0";
-});
-
-renderAll();
+onValue(ref(db,"record"),s=>recordText.textContent=s.val()||"0 - 0 - 0");
 </script>
 
 </body>
