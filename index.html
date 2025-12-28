@@ -22,11 +22,14 @@ nav{display:flex;gap:18px;align-items:center;flex-wrap:wrap;}
 nav a{color:#fff;font-weight:600;cursor:pointer;text-decoration:none;font-size:14px;}
 nav a.admin{border:1px solid #fff;padding:5px 12px;border-radius:20px;}
 nav a.logout{border:1px solid #ff4500;color:#ff4500;padding:5px 12px;border-radius:20px;display:none;}
-.banner-container{background:#111;color:#fff;padding:10px 20px;border-radius:10px;overflow:hidden;position:relative;height:40px;margin:10px 40px;}
-.banner-slide{position:absolute;white-space:nowrap;animation:slide 12s linear infinite;}
-@keyframes slide{
-  0%{transform:translateX(100%);}
-  100%{transform:translateX(-100%);}
+.banner-container{
+  background:#111;color:#fff;padding:10px 20px;border-radius:10px;overflow:hidden;height:40px;margin:10px 40px;position:relative;
+}
+.banner-track{
+  display:inline-block;
+  white-space:nowrap;
+  position:absolute;
+  will-change:transform;
 }
 main{max-width:1200px;margin:auto;padding:20px;}
 section{display:none}
@@ -52,6 +55,7 @@ a.link:hover{text-decoration:underline}
 </style>
 </head>
 <body>
+
 <header>
   <div class="brand">
     <img src="assets/inferno-logo.png">
@@ -74,10 +78,11 @@ a.link:hover{text-decoration:underline}
 
 <!-- Banner always visible -->
 <div class="banner-container">
-  <div class="banner-slide" id="bannerSlide">Loading updates...</div>
+  <div class="banner-track" id="bannerTrack">Loading updates...</div>
 </div>
 
 <main>
+
 <!-- Roster -->
 <section id="roster">
   <div class="card">
@@ -201,6 +206,32 @@ window.logout = () => {
   renderAllTables();
 };
 
+// Banner smooth scroll
+const bannerTrack = document.getElementById("bannerTrack");
+let bannerItems = [];
+let scrollPos = 0;
+let speed = 1;
+
+function updateBanner() {
+  if (!bannerItems.length) return;
+  bannerTrack.innerHTML = bannerItems.join(" &nbsp; | &nbsp; ") + " &nbsp; | &nbsp; " + bannerItems.join(" &nbsp; | &nbsp; ");
+}
+
+function animateBanner() {
+  scrollPos -= speed;
+  if(scrollPos <= -bannerTrack.scrollWidth / 2) scrollPos = 0;
+  bannerTrack.style.transform = `translateX(${scrollPos}px)`;
+  requestAnimationFrame(animateBanner);
+}
+
+function setBannerItems(items){
+  bannerItems = items;
+  scrollPos = 0;
+  updateBanner();
+}
+
+animateBanner();
+
 // Generic render function
 function renderTable(key, bodyId, cols){
   onValue(ref(db,key), snap=>{
@@ -208,9 +239,10 @@ function renderTable(key, bodyId, cols){
     if(body) body.innerHTML="";
     const data = snap.val()||{};
     let rows = Object.keys(data).map(id=>({id,row:data[id].split("|").map(x=>x.trim())}));
+
     if(key==="league") rows.sort((a,b)=>(+b.row[5]||0)-(+a.row[5]||0));
     if(key==="schedule") rows.sort((a,b)=>new Date(a.row[0])-new Date(b.row[0]));
-    if(key==="news") rows.reverse(); // newest first
+    if(key==="news") rows.reverse();
 
     rows.forEach(({id,row})=>{
       if(row.length===cols && body){
@@ -222,23 +254,18 @@ function renderTable(key, bodyId, cols){
             <button class="action-btn edit-btn" onclick="editRow('${key}','${id}')">Edit</button>
             <button class="action-btn delete-btn" onclick="deleteRow('${key}','${id}')">Delete</button>
           </td>`;
-        } else {
-          tr.innerHTML += `<td>--</td>`;
-        }
+        } else { tr.innerHTML += `<td>--</td>`; }
         body.appendChild(tr);
       }
     });
 
-    // Update banner content dynamically
-    const banner = document.getElementById("bannerSlide");
-    if(banner){
-      let bannerItems = [];
-      if(key==="schedule") rows.forEach(r=>bannerItems.push(`Upcoming: ${r.row[0]} vs ${r.row[1]} (${r.row[2]})`));
-      if(key==="news") rows.forEach(r=>bannerItems.push(`News: ${r.row[0]}`));
-      banner.innerHTML = bannerItems.join(" | ") || "Welcome to Inferno Nepean Hockey!";
-    }
+    // Update banner content
+    let bannerList=[];
+    if(key==="schedule") rows.forEach(r=>bannerList.push(`Upcoming: ${r.row[0]} vs ${r.row[1]} (${r.row[2]})`));
+    if(key==="news") rows.forEach(r=>bannerList.push(`News: ${r.row[0]}`));
+    setBannerItems(bannerList);
 
-    // Render news cards
+    // News cards
     if(key==="news"){
       const newsDiv = document.getElementById("newsContainer");
       if(newsDiv) newsDiv.innerHTML="";
@@ -267,7 +294,7 @@ function renderAllTables(){
 window.editRow = (key,id)=>{
   if(!isAdmin) return alert("You must be an admin to edit!");
   let row = document.querySelector(`#${key}Body tr[data-id='${id}']`);
-  if(!row && key==="news") return; // news editing handled inline
+  if(!row && key==="news") return;
   if(!row) return;
   const cells = Array.from(row.children).slice(0,row.children.length-1);
   const originalValues = cells.map(td=>td.textContent);
@@ -320,9 +347,9 @@ function saveRecord(){
   document.getElementById("recordInput").value="";
 }
 
-// Initial Render
 renderAllTables();
 onValue(ref(db,"record"),s=>document.getElementById("recordText").textContent=s.val()||"0 - 0 - 0");
 </script>
+
 </body>
 </html>
