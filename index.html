@@ -8,18 +8,17 @@
 
 <!-- Firebase -->
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
-  import { getDatabase, ref, set, onValue, remove } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-database.js";
-  window.firebaseApp = initializeApp({
-    apiKey:"AIzaSyCcl7fjelmFRMSNqrNfCTSEJxJcxj7lano",
-    databaseURL:"https://infernohockey-b39f9-default-rtdb.firebaseio.com",
-    projectId:"infernohockey-b39f9"
-  });
-  window.db = getDatabase(window.firebaseApp);
-</script>
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
+import { getDatabase, ref, set, onValue, remove } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-database.js";
 
-<!-- Chart.js -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+const firebaseConfig = {
+  apiKey:"AIzaSyCcl7fjelmFRMSNqrNfCTSEJxJcxj7lano",
+  databaseURL:"https://infernohockey-b39f9-default-rtdb.firebaseio.com",
+  projectId:"infernohockey-b39f9"
+};
+window.app = initializeApp(firebaseConfig);
+window.db = getDatabase(window.app);
+</script>
 
 <style>
 :root{
@@ -31,7 +30,7 @@
 }
 *{box-sizing:border-box;}
 body{margin:0;font-family:"Segoe UI",Arial,sans-serif;background:var(--dark);color:var(--text);}
-header{background:linear-gradient(90deg,#8b0000,#ff4500);padding:10px 20px;display:flex;justify-content:space-between;align-items:center;position:relative;flex-wrap:wrap;}
+header{background:linear-gradient(90deg,#8b0000,#ff4500);padding:10px 20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;position:relative;}
 .brand{display:flex;gap:12px;align-items:center;}
 .brand img{height:60px;}
 .brand span{font-size:14px;color:#ffe1e1;}
@@ -40,14 +39,13 @@ nav a{color:#fff;font-weight:600;cursor:pointer;text-decoration:none;font-size:1
 nav a.admin{border:1px solid #fff;padding:5px 12px;border-radius:20px;}
 nav a.logout{border:1px solid #ff4500;color:#ff4500;padding:5px 12px;border-radius:20px;display:none;}
 
-.banner{background:#111;height:40px;overflow:hidden;position:relative;margin-top:10px;border-radius:8px;width:100%;}
-.banner span{position:absolute;white-space:nowrap;font-weight:700;font-size:14px;animation:scroll 15s linear infinite;padding-left:100%;}
+.banner{background:#111;height:30px;overflow:hidden;position:relative;margin-top:10px;border-radius:8px;width:100%;}
+.banner span{position:absolute;white-space:nowrap;font-weight:700;font-size:14px;animation:scroll 20s linear infinite;padding-left:100%;}
 @keyframes scroll{0%{transform:translateX(100%);}100%{transform:translateX(-100%);}}
 
 main{max-width:1200px;margin:auto;padding:20px;}
 section{display:none;}
 section.active{display:block;}
-
 .card{background:var(--card);padding:20px;border-radius:12px;box-shadow:0 10px 25px rgba(0,0,0,.5);margin-bottom:20px;}
 h2{margin-top:0;border-left:6px solid var(--accent);padding-left:10px;}
 table{width:100%;border-collapse:collapse;margin-top:15px;}
@@ -68,12 +66,7 @@ a.link:hover{text-decoration:underline;}
 .record-score{font-size:32px;color:#ff0000;font-weight:900;}
 .countdown{font-size:14px;color:#fff;margin-top:5px;text-align:center;}
 .footer{margin-top:40px;text-align:center;font-size:12px;color:#aaa;}
-
-/* Responsive */
-@media(max-width:768px){
-  nav{flex-direction:column;gap:6px;}
-  .banner span{font-size:12px;}
-}
+@media(max-width:768px){nav{flex-direction:column;gap:6px;} .banner span{font-size:12px;}}
 </style>
 </head>
 <body>
@@ -103,96 +96,94 @@ a.link:hover{text-decoration:underline;}
 </header>
 
 <main>
-  <!-- ROSTER -->
-  <section id="roster">
-    <div class="card">
-      <h2>Player Roster</h2>
-      <table>
-        <thead>
-          <tr><th>Name</th><th>Position</th><th>#</th><th>Goals</th><th>Assists</th><th>Points</th><th>Actions</th></tr>
-        </thead>
-        <tbody id="rosterBody"></tbody>
-      </table>
-      <textarea id="rosterInput" class="admin-only" placeholder="Name | Position | Number | Goals | Assists | Points"></textarea>
-      <button class="admin-only" onclick="save('roster')">Add Player</button>
-    </div>
-  </section>
+<!-- ROSTER -->
+<section id="roster">
+  <div class="card">
+    <h2>Player Roster</h2>
+    <table>
+      <thead>
+        <tr><th>Name</th><th>Position</th><th>#</th><th>Goals</th><th>Assists</th><th>Points</th><th>Actions</th></tr>
+      </thead>
+      <tbody id="rosterBody"></tbody>
+    </table>
+    <textarea id="rosterInput" class="admin-only" placeholder="Name | Position | Number | Goals | Assists | Points"></textarea>
+    <button class="admin-only" onclick="save('roster')">Add Player</button>
+  </div>
+</section>
 
-  <!-- COACHES -->
-  <section id="coaches">
-    <div class="card">
-      <h2>Coaching Staff</h2>
-      <table>
-        <thead><tr><th>Name</th><th>Role</th><th>Actions</th></tr></thead>
-        <tbody id="coachesBody"></tbody>
-      </table>
-      <textarea id="coachesInput" class="admin-only" placeholder="Name | Role"></textarea>
-      <button class="admin-only" onclick="save('coaches')">Add Coach</button>
-    </div>
-  </section>
+<!-- COACHES -->
+<section id="coaches">
+  <div class="card">
+    <h2>Coaching Staff</h2>
+    <table>
+      <thead><tr><th>Name</th><th>Role</th><th>Actions</th></tr></thead>
+      <tbody id="coachesBody"></tbody>
+    </table>
+    <textarea id="coachesInput" class="admin-only" placeholder="Name | Role"></textarea>
+    <button class="admin-only" onclick="save('coaches')">Add Coach</button>
+  </div>
+</section>
 
-  <!-- LEAGUE -->
-  <section id="league">
-    <div class="card">
-      <h2>League Standings</h2>
-      <canvas id="standingsChart" height="150"></canvas>
-      <table>
-        <thead>
-          <tr><th>Team</th><th>GP</th><th>W</th><th>L</th><th>T</th><th>PTS</th><th>Actions</th></tr>
-        </thead>
-        <tbody id="leagueBody"></tbody>
-      </table>
-      <textarea id="leagueInput" class="admin-only" placeholder="Team | GP | W | L | T | PTS"></textarea>
-      <button class="admin-only" onclick="save('league')">Add League Entry</button>
-    </div>
-  </section>
+<!-- LEAGUE -->
+<section id="league">
+  <div class="card">
+    <h2>League Standings</h2>
+    <table>
+      <thead>
+        <tr><th>Team</th><th>GP</th><th>W</th><th>L</th><th>T</th><th>PTS</th><th>Actions</th></tr>
+      </thead>
+      <tbody id="leagueBody"></tbody>
+    </table>
+    <textarea id="leagueInput" class="admin-only" placeholder="Team | GP | W | L | T | PTS"></textarea>
+    <button class="admin-only" onclick="save('league')">Add Team</button>
+  </div>
+</section>
 
-  <!-- SCHEDULE & RESULTS -->
-  <section id="schedule">
-    <div class="card">
-      <h2>Schedule & Results</h2>
-      <table>
-        <thead><tr><th>Date</th><th>Opponent</th><th>Location</th><th>Score</th><th>Actions</th></tr></thead>
-        <tbody id="scheduleBody"></tbody>
-      </table>
-      <textarea id="scheduleInput" class="admin-only" placeholder="Date | Opponent | Location | Score"></textarea>
-      <button class="admin-only" onclick="save('schedule')">Add Game</button>
-    </div>
-  </section>
+<!-- SCHEDULE & RESULTS -->
+<section id="schedule">
+  <div class="card">
+    <h2>Schedule & Results</h2>
+    <table>
+      <thead><tr><th>Date</th><th>Opponent</th><th>Location</th><th>Score</th><th>Actions</th></tr></thead>
+      <tbody id="scheduleBody"></tbody>
+    </table>
+    <textarea id="scheduleInput" class="admin-only" placeholder="Date | Opponent | Location | Score"></textarea>
+    <button class="admin-only" onclick="save('schedule')">Add Game</button>
+  </div>
+</section>
 
-  <!-- NEWS -->
-  <section id="news">
-    <div class="card">
-      <h2>Latest News</h2>
-      <div id="newsCarousel" style="overflow:hidden;white-space:nowrap;"></div>
-      <textarea id="newsInput" class="admin-only" placeholder="Title | Description | Link (optional)"></textarea>
-      <button class="admin-only" onclick="save('news')">Add News</button>
-    </div>
-  </section>
+<!-- NEWS -->
+<section id="news">
+  <div class="card">
+    <h2>Latest News</h2>
+    <div id="newsCarousel" style="overflow:hidden;white-space:nowrap;"></div>
+    <textarea id="newsInput" class="admin-only" placeholder="Title | Description | Link (optional)"></textarea>
+    <button class="admin-only" onclick="save('news')">Add News</button>
+  </div>
+</section>
 
-  <!-- TEAM RECORD -->
-  <section id="record">
-    <div class="card">
-      <h2>Team Record</h2>
-      <div class="team-record">
-        <div class="record-score" id="recordText">0 - 0 - 0</div>
-        <div>U15 HB Team I • 2025–2026</div>
-        <textarea id="recordInput" class="admin-only" placeholder="Format: W-L-T"></textarea>
-        <button class="admin-only" onclick="saveRecord()">Save Record</button>
-      </div>
+<!-- TEAM RECORD -->
+<section id="record">
+  <div class="card">
+    <h2>Team Record</h2>
+    <div class="team-record">
+      <div class="record-score" id="recordText">0 - 0 - 0</div>
+      <div>U15 HB Team I • 2025–2026</div>
+      <textarea id="recordInput" class="admin-only" placeholder="Format: W-L-T"></textarea>
+      <button class="admin-only" onclick="saveRecord()">Save Record</button>
     </div>
-  </section>
+  </div>
+</section>
 
-  <!-- ADMIN LOGIN -->
-  <section id="admin">
-    <div class="card">
-      <h2>Admin Login</h2>
-      <input id="user" placeholder="Username">
-      <input id="pass" type="password" placeholder="Password">
-      <button onclick="login()">Login</button>
-    </div>
-  </section>
-
+<!-- ADMIN LOGIN -->
+<section id="admin">
+  <div class="card">
+    <h2>Admin Login</h2>
+    <input id="user" placeholder="Username">
+    <input id="pass" type="password" placeholder="Password">
+    <button onclick="login()">Login</button>
+  </div>
+</section>
 </main>
 
 <div class="footer">
@@ -200,11 +191,8 @@ a.link:hover{text-decoration:underline;}
 </div>
 
 <script type="module">
-// Firebase functions
 import { ref, set, onValue, remove } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-database.js";
 const db = window.db;
-
-// Admin
 const ADMIN_USER="athenadmin";
 const ADMIN_PASS="AthFon32";
 let isAdmin = false;
@@ -212,12 +200,11 @@ let isAdmin = false;
 // Show sections
 window.show = id=>{
   document.querySelectorAll("section").forEach(s=>s.classList.remove("active"));
-  const section = document.getElementById(id);
-  if(section) section.classList.add("active");
+  document.getElementById(id).classList.add("active");
 };
 document.addEventListener("DOMContentLoaded",()=>{ show("roster"); renderAllTables(); });
 
-// Login/Logout
+// Admin login/logout
 window.login = ()=>{
   if(user.value!==ADMIN_USER||pass.value!==ADMIN_PASS) return alert("Incorrect login");
   isAdmin=true;
@@ -234,13 +221,20 @@ window.logout = ()=>{
   renderAllTables();
 };
 
-// Generic Table Renderer
+// Table renderer
 function renderTable(key, bodyId, cols){
   onValue(ref(db,key), snap=>{
     const body=document.getElementById(bodyId);
     body.innerHTML="";
     const data=snap.val()||{};
-    Object.keys(data).forEach(id=>{
+    // Sort for League by PTS
+    let sortedKeys = Object.keys(data);
+    if(key==="league") sortedKeys.sort((a,b)=>{
+      const ptsA = parseInt(data[a].split("|")[5]||0);
+      const ptsB = parseInt(data[b].split("|")[5]||0);
+      return ptsB-ptsA;
+    });
+    sortedKeys.forEach(id=>{
       const row=data[id].split("|").map(x=>x.trim());
       if(row.length===cols){
         const tr=document.createElement("tr");
@@ -257,18 +251,58 @@ function renderTable(key, bodyId, cols){
   });
 }
 
-function renderAllTables(){
-  renderTable("roster","rosterBody",7);
-  renderTable("coaches","coachesBody",2);
-  renderTable("league","leagueBody",6);
-  renderTable("schedule","scheduleBody",4);
-  renderTable("news","newsCarousel",3);
-  renderLeagueChart();
-  renderBanner();
+// Generic edit/save/cancel/delete functions
+window.editRow = (key,id)=>{
+  if(!isAdmin) return;
+  const row=document.querySelector(`#${key}Body tr[data-id='${id}']`);
+  if(!row) return;
+  const cells=Array.from(row.children).slice(0,row.children.length-1);
+  const originalValues=cells.map(td=>td.textContent);
+  cells.forEach((td,i)=>td.innerHTML=`<input value="${td.textContent}" style="width:100%">`);
+  const actionCell=row.children[row.children.length-1];
+  actionCell.innerHTML=`<button class="action-btn save-btn" onclick="saveRow('${key}','${id}')">Save</button>
+  <button class="action-btn cancel-btn" onclick="cancelEdit('${key}','${id}',[${originalValues.map(v=>`'${v}'`).join(",")}])">Cancel</button>`;
+};
+
+window.saveRow = (key,id)=>{
+  if(!isAdmin) return;
+  const row=document.querySelector(`#${key}Body tr[data-id='${id}']`);
+  if(!row) return;
+  const inputs=Array.from(row.querySelectorAll('input'));
+  const newValue=inputs.map(input=>input.value.trim()).join(" | ");
+  if(!newValue) return;
+  set(ref(db,key+"/"+id),newValue);
+};
+
+window.cancelEdit = (key,id,originalValues)=>{
+  if(!isAdmin) return;
+  const row=document.querySelector(`#${key}Body tr[data-id='${id}']`);
+  const cells=Array.from(row.children).slice(0,row.children.length-1);
+  cells.forEach((td,i)=>td.textContent=originalValues[i]);
+  const actionCell=row.children[row.children.length-1];
+  actionCell.innerHTML=`<button class="action-btn edit-btn" onclick="editRow('${key}','${id}')">Edit</button>
+  <button class="action-btn delete-btn" onclick="deleteRow('${key}','${id}')">Delete</button>`;
+};
+
+window.deleteRow=(key,id)=>{if(!isAdmin) return; if(confirm("Delete this entry?")) remove(ref(db,key+"/"+id));};
+window.save=(key)=>{if(!isAdmin) return; const input=document.getElementById(key+"Input"); if(!input.value.trim()) return; const newId=Date.now().toString(); set(ref(db,key+"/"+newId),input.value); input.value="";};
+function saveRecord(){if(!isAdmin) return; const val=document.getElementById("recordInput").value.trim(); if(!val) return; set(ref(db,"record"),val); document.getElementById("recordInput").value="";}
+
+// Banner scrolling and news
+function renderBanner(){
+  onValue(ref(db,"schedule"), snap=>{
+    const games = snap.val()||{};
+    let text="Upcoming Games: ";
+    Object.keys(games).forEach(k=>{const g=games[k].split("|"); text+=`${g[0]} vs ${g[1]} (${g[2]}) | `;});
+    onValue(ref(db,"news"), nSnap=>{
+      const news=nSnap.val()||{};
+      Object.keys(news).forEach(k=>{const item=news[k].split("|"); text+=`${item[0]} - ${item[1]} | `;});
+      document.getElementById("bannerText").textContent=text;
+    });
+  });
 }
 
-// Rest of edit/delete/save functions go here (same as previous working code)
-// League chart & banner functions go here
+function renderAllTables(){renderTable("roster","rosterBody",7);renderTable("coaches","coachesBody",2);renderTable("league","leagueBody",6);renderTable("schedule","scheduleBody",4);renderTable("news","newsCarousel",3);renderBanner();}
 </script>
 
 </body>
