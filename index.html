@@ -4,82 +4,86 @@
 <meta charset="UTF-8">
 <title>Inferno Nepean Hockey</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="icon" href="assets/inferno-logo.png" type="image/png">
 
 <style>
 :root{
-  --dark:#0c0c0c;
-  --card:#171717;
+  --bg:#0b0b0b;
+  --card:#161616;
   --accent:#ff4500;
-  --text:#f2f2f2;
+  --text:#eee;
 }
 *{box-sizing:border-box}
-body{margin:0;font-family:Segoe UI,Arial;background:var(--dark);color:var(--text)}
+body{margin:0;font-family:Segoe UI,Arial;background:var(--bg);color:var(--text)}
 
-.top-banner{
+.banner{
   background:#111;
-  color:#fff;
-  padding:10px 20px;
-  font-weight:600;
-  text-align:center;
   border-bottom:2px solid var(--accent);
+  padding:12px;
+  text-align:center;
+  font-weight:700;
+  overflow:hidden;
 }
-.top-banner span{
-  color:var(--accent);
-  margin-right:10px;
-}
+#bannerText{transition:opacity .4s}
 
 header{
   background:linear-gradient(90deg,#8b0000,#ff4500);
-  padding:18px 40px;
+  padding:16px 32px;
   display:flex;
   justify-content:space-between;
   align-items:center;
 }
-.brand{display:flex;gap:18px;align-items:center}
-.brand img{height:70px}
-nav a{color:#fff;margin-left:18px;font-weight:600;cursor:pointer;text-decoration:none}
-nav a.admin{border:1px solid #fff;padding:5px 12px;border-radius:20px}
-nav a.logout{display:none;border:1px solid var(--accent);color:var(--accent);padding:5px 12px;border-radius:20px}
+header h1{margin:0}
+nav a{
+  margin-left:14px;
+  color:#fff;
+  text-decoration:none;
+  font-weight:600;
+  cursor:pointer;
+}
+nav a.admin{border:1px solid #fff;padding:4px 10px;border-radius:18px}
+nav a.logout{display:none;color:var(--accent)}
 
-main{max-width:1200px;margin:auto;padding:40px 20px}
+main{max-width:1200px;margin:auto;padding:30px}
 section{display:none}
 section.active{display:block}
 
-.card{background:var(--card);padding:30px;border-radius:14px}
-h2{border-left:6px solid var(--accent);padding-left:14px}
+.card{background:var(--card);padding:26px;border-radius:14px;margin-bottom:30px}
+h2{border-left:6px solid var(--accent);padding-left:12px}
 
-table{width:100%;border-collapse:collapse;margin-top:20px}
-th,td{border:1px solid #2a2a2a;padding:10px;text-align:center}
+table{width:100%;border-collapse:collapse;margin-top:14px}
+th,td{border:1px solid #333;padding:8px;text-align:center}
 th{background:#111;color:var(--accent)}
 
-.admin-only{display:none}
-textarea,input,button{width:100%;margin-top:12px;padding:10px;border-radius:8px;border:none}
-textarea,input{background:#0f0f0f;color:#fff}
+input,textarea,button{
+  width:100%;margin-top:10px;padding:10px;
+  border-radius:8px;border:none;
+}
+input,textarea{background:#0f0f0f;color:#fff}
 button{background:var(--accent);font-weight:700;cursor:pointer}
 
-.action-btn{padding:4px 8px;border-radius:6px;border:none;cursor:pointer}
-.edit-btn{background:orange}
-.delete-btn{background:red;color:#fff}
-.save-btn{background:green;color:#fff}
-.cancel-btn{background:#777;color:#fff}
+.admin-only{display:none}
+.small-btn{padding:4px 8px;font-size:12px}
+.delete{background:red;color:#fff}
+.edit{background:orange}
+.save{background:green;color:#fff}
 </style>
 </head>
 
 <body>
 
-<!-- 🔥 TOP UPCOMING / RESULTS BANNER -->
-<div class="top-banner" id="bannerText">
-  <span>UPCOMING:</span> Inferno vs TBD — Date TBA
+<!-- 🔥 MOVING BANNER -->
+<div class="banner">
+  <div id="bannerText">Welcome to Inferno Hockey</div>
 </div>
 
 <header>
-  <div class="brand">
-    <img src="assets/inferno-logo.png">
-    <h1>Inferno Nepean Hockey</h1>
-  </div>
+  <h1>Inferno Nepean Hockey</h1>
   <nav>
-    <a onclick="show('league')">League</a>
+    <a onclick="show('standings')">Standings</a>
+    <a onclick="show('schedule')">Schedule</a>
+    <a onclick="show('roster')">Roster</a>
+    <a onclick="show('coaches')">Coaches</a>
+    <a onclick="show('news')">News</a>
     <a class="admin" onclick="show('admin')">Admin</a>
     <a class="logout" id="logoutBtn" onclick="logout()">Logout</a>
   </nav>
@@ -87,39 +91,73 @@ button{background:var(--accent);font-weight:700;cursor:pointer}
 
 <main>
 
-<section id="league" class="active">
-  <div class="card">
-    <h2>League Standings</h2>
-    <table>
-      <thead>
-        <tr>
-          <th>Team</th><th>GP</th><th>W</th><th>L</th><th>T</th><th>PTS</th><th>Actions</th>
-        </tr>
-      </thead>
-      <tbody id="leagueBody"></tbody>
-    </table>
-    <textarea id="leagueInput" class="admin-only"
-      placeholder="Team | GP | W | L | T | PTS"></textarea>
-    <button class="admin-only" onclick="addTeam()">Add Team</button>
-  </div>
+<!-- STANDINGS -->
+<section id="standings" class="active">
+<div class="card">
+<h2>League Standings</h2>
+<table>
+<thead><tr><th>Team</th><th>GP</th><th>W</th><th>L</th><th>T</th><th>PTS</th><th></th></tr></thead>
+<tbody id="standingsBody"></tbody>
+</table>
+<textarea id="standingsInput" class="admin-only" placeholder="Team | GP | W | L | T | PTS"></textarea>
+<button class="admin-only" onclick="addItem('standings',standingsInput.value)">Add Team</button>
+</div>
 </section>
 
+<!-- SCHEDULE -->
+<section id="schedule">
+<div class="card">
+<h2>Schedule & Results</h2>
+<ul id="scheduleList"></ul>
+<textarea id="scheduleInput" class="admin-only" placeholder="Inferno vs Hawks — Oct 14 @ 7:00"></textarea>
+<button class="admin-only" onclick="addItem('schedule',scheduleInput.value)">Add Game</button>
+</div>
+</section>
+
+<!-- ROSTER -->
+<section id="roster">
+<div class="card">
+<h2>Player Roster</h2>
+<ul id="rosterList"></ul>
+<textarea id="rosterInput" class="admin-only" placeholder="#12 | John Smith | Forward"></textarea>
+<button class="admin-only" onclick="addItem('roster',rosterInput.value)">Add Player</button>
+</div>
+</section>
+
+<!-- COACHES -->
+<section id="coaches">
+<div class="card">
+<h2>Coaches & Staff</h2>
+<ul id="coachesList"></ul>
+<textarea id="coachesInput" class="admin-only" placeholder="Head Coach | Mike Johnson"></textarea>
+<button class="admin-only" onclick="addItem('coaches',coachesInput.value)">Add Coach</button>
+</div>
+</section>
+
+<!-- NEWS -->
+<section id="news">
+<div class="card">
+<h2>Team News</h2>
+<ul id="newsList"></ul>
+<textarea id="newsInput" class="admin-only" placeholder="Inferno wins season opener 4–2"></textarea>
+<button class="admin-only" onclick="addItem('news',newsInput.value)">Post News</button>
+</div>
+</section>
+
+<!-- ADMIN -->
 <section id="admin">
-  <div class="card">
-    <h2>Admin Panel</h2>
+<div class="card">
+<h2>Admin Panel</h2>
+<input id="user" placeholder="Username">
+<input id="pass" type="password" placeholder="Password">
+<button onclick="login()">Login</button>
 
-    <h3>Top Banner (Upcoming / Results)</h3>
-    <textarea id="bannerInput" class="admin-only"
-      placeholder="Example: UPCOMING: Inferno vs Hawks — Oct 14 @ 7:00 | RESULT: Inferno 4–2 Sens"></textarea>
-    <button class="admin-only" onclick="saveBanner()">Save Banner</button>
+<hr style="margin:30px 0;border:1px solid #333">
 
-    <hr style="margin:30px 0;border:1px solid #333">
-
-    <h3>Login</h3>
-    <input id="user" placeholder="Username">
-    <input id="pass" type="password" placeholder="Password">
-    <button onclick="login()">Login</button>
-  </div>
+<h3>Banner Messages (auto-rotating)</h3>
+<textarea id="bannerInput" class="admin-only" placeholder="UPCOMING: Inferno vs Sens — Oct 20"></textarea>
+<button class="admin-only" onclick="addItem('banner',bannerInput.value)">Add Banner</button>
+</div>
 </section>
 
 </main>
@@ -139,89 +177,81 @@ const ADMIN_USER="athenadmin";
 const ADMIN_PASS="AthFon32";
 let isAdmin=false;
 
+/* NAV */
 window.show=id=>{
   document.querySelectorAll("section").forEach(s=>s.classList.remove("active"));
   document.getElementById(id).classList.add("active");
 };
 
+/* LOGIN */
 window.login=()=>{
-  if(user.value!==ADMIN_USER||pass.value!==ADMIN_PASS)
-    return alert("Wrong login");
+  if(user.value!==ADMIN_USER||pass.value!==ADMIN_PASS) return alert("Wrong login");
   isAdmin=true;
   document.querySelectorAll(".admin-only").forEach(e=>e.style.display="block");
-  logoutBtn.style.display="inline-block";
+  logoutBtn.style.display="inline";
 };
-
 window.logout=()=>{
   isAdmin=false;
   document.querySelectorAll(".admin-only").forEach(e=>e.style.display="none");
   logoutBtn.style.display="none";
 };
 
-function renderStandings(){
-  onValue(ref(db,"league"),snap=>{
-    const body=document.getElementById("leagueBody");
-    body.innerHTML="";
-    let rows=[];
+/* ADD ITEMS */
+window.addItem=(path,val)=>{
+  if(!val.trim()) return;
+  set(ref(db,`${path}/`+Date.now()),val);
+};
+
+/* LOAD LISTS */
+function loadList(path,el){
+  onValue(ref(db,path),snap=>{
+    el.innerHTML="";
     const data=snap.val()||{};
     Object.keys(data).forEach(id=>{
-      const row=data[id].split("|").map(v=>v.trim());
-      if(row.length===6) rows.push({id,row});
-    });
-
-    rows.sort((a,b)=>(parseInt(b.row[5])||0)-(parseInt(a.row[5])||0));
-
-    rows.forEach(({id,row})=>{
-      const tr=document.createElement("tr");
-      tr.dataset.id=id;
-      tr.innerHTML=row.map(v=>`<td>${v}</td>`).join("")+
-      `<td>${isAdmin?`
-        <button class="action-btn edit-btn" onclick="editTeam('${id}')">Edit</button>
-        <button class="action-btn delete-btn" onclick="deleteTeam('${id}')">Delete</button>
-      `:"--"}</td>`;
-      body.appendChild(tr);
+      const li=document.createElement("li");
+      li.innerHTML=data[id]+(isAdmin?
+        ` <button class="small-btn delete" onclick="remove(ref(db,'${path}/${id}'))">X</button>`:"");
+      el.appendChild(li);
     });
   });
 }
 
-window.addTeam=()=>{
-  const input=document.getElementById("leagueInput");
-  if(!input.value.trim()) return;
-  set(ref(db,"league/"+Date.now()),input.value);
-  input.value="";
-};
+loadList("schedule",scheduleList);
+loadList("roster",rosterList);
+loadList("coaches",coachesList);
+loadList("news",newsList);
 
-window.deleteTeam=id=>{
-  if(confirm("Delete this team?")) remove(ref(db,"league/"+id));
-};
-
-window.editTeam=id=>{
-  const row=document.querySelector(`tr[data-id='${id}']`);
-  const values=[...row.children].slice(0,6).map(td=>td.textContent);
-  [...row.children].slice(0,6)
-    .forEach((td,i)=>td.innerHTML=`<input value="${values[i]}">`);
-  row.lastChild.innerHTML=`
-    <button class="action-btn save-btn" onclick="saveTeam('${id}')">Save</button>
-    <button class="action-btn cancel-btn" onclick="renderStandings()">Cancel</button>`;
-};
-
-window.saveTeam=id=>{
-  const row=document.querySelector(`tr[data-id='${id}']`);
-  const values=[...row.querySelectorAll("input")].map(i=>i.value.trim());
-  set(ref(db,"league/"+id),values.join(" | "));
-};
-
-/* 🔥 TOP BANNER */
-window.saveBanner=()=>{
-  const val=document.getElementById("bannerInput").value.trim();
-  if(val) set(ref(db,"banner"),val);
-};
-
-onValue(ref(db,"banner"),snap=>{
-  if(snap.exists()) bannerText.innerHTML = snap.val();
+/* STANDINGS */
+onValue(ref(db,"standings"),snap=>{
+  standingsBody.innerHTML="";
+  let rows=[];
+  const d=snap.val()||{};
+  Object.keys(d).forEach(id=>{
+    const r=d[id].split("|").map(v=>v.trim());
+    rows.push({id,r});
+  });
+  rows.sort((a,b)=>(+b.r[5]||0)-(+a.r[5]||0));
+  rows.forEach(({id,r})=>{
+    const tr=document.createElement("tr");
+    tr.innerHTML=r.map(v=>`<td>${v}</td>`).join("")+
+      `<td>${isAdmin?`<button class="small-btn delete" onclick="remove(ref(db,'standings/${id}'))">X</button>`:""}</td>`;
+    standingsBody.appendChild(tr);
+  });
 });
 
-renderStandings();
+/* BANNER ROTATION */
+let bannerMsgs=[],bannerIndex=0;
+onValue(ref(db,"banner"),snap=>{
+  bannerMsgs=Object.values(snap.val()||{});
+});
+setInterval(()=>{
+  if(!bannerMsgs.length) return;
+  bannerText.style.opacity=0;
+  setTimeout(()=>{
+    bannerText.textContent=bannerMsgs[bannerIndex++%bannerMsgs.length];
+    bannerText.style.opacity=1;
+  },400);
+},3500);
 </script>
 
 </body>
