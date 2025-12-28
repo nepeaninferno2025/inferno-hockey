@@ -62,10 +62,11 @@ input,textarea{background:#0f0f0f;color:#fff}
 button{background:var(--accent);font-weight:700;cursor:pointer}
 
 .admin-only{display:none}
-.small-btn{padding:4px 8px;font-size:12px}
+.action-btn{padding:4px 8px;margin:0 2px;border:none;border-radius:6px;cursor:pointer}
 .delete{background:red;color:#fff}
 .edit{background:orange}
 .save{background:green;color:#fff}
+.cancel{background:#777;color:#fff}
 </style>
 </head>
 
@@ -96,9 +97,8 @@ button{background:var(--accent);font-weight:700;cursor:pointer}
 <div class="card">
 <h2>League Standings</h2>
 <table>
-<thead><tr><th>Team</th><th>GP</th><th>W</th><th>L</th><th>T</th><th>PTS</th><th></th></tr></thead>
+<thead><tr><th>Team</th><th>GP</th><th>W</th><th>L</th><th>T</th><th>PTS</th><th>Actions</th></tr></thead>
 <tbody id="standingsBody"></tbody>
-</table>
 <textarea id="standingsInput" class="admin-only" placeholder="Team | GP | W | L | T | PTS"></textarea>
 <button class="admin-only" onclick="addItem('standings',standingsInput.value)">Add Team</button>
 </div>
@@ -152,7 +152,7 @@ button{background:var(--accent);font-weight:700;cursor:pointer}
 <input id="pass" type="password" placeholder="Password">
 <button onclick="login()">Login</button>
 
-<hr style="margin:30px 0;border:1px solid #333">
+<hr style="margin:20px 0;border:1px solid #333">
 
 <h3>Banner Messages (auto-rotating)</h3>
 <textarea id="bannerInput" class="admin-only" placeholder="UPCOMING: Inferno vs Sens — Oct 20"></textarea>
@@ -196,48 +196,70 @@ window.logout=()=>{
   logoutBtn.style.display="none";
 };
 
-/* ADD ITEMS */
+/* ADD ITEM */
 window.addItem=(path,val)=>{
   if(!val.trim()) return;
   set(ref(db,`${path}/`+Date.now()),val);
 };
 
-/* LOAD LISTS */
+/* LOAD LISTS with edit/delete */
 function loadList(path,el){
   onValue(ref(db,path),snap=>{
     el.innerHTML="";
     const data=snap.val()||{};
     Object.keys(data).forEach(id=>{
       const li=document.createElement("li");
-      li.innerHTML=data[id]+(isAdmin?
-        ` <button class="small-btn delete" onclick="remove(ref(db,'${path}/${id}'))">X</button>`:"");
+      li.textContent=data[id];
+      if(isAdmin){
+        const editBtn=document.createElement("button");
+        editBtn.textContent="Edit";
+        editBtn.className="action-btn edit";
+        editBtn.onclick=()=>editItem(path,id);
+        const delBtn=document.createElement("button");
+        delBtn.textContent="Delete";
+        delBtn.className="action-btn delete";
+        delBtn.onclick=()=>remove(ref(db,`${path}/${id}`));
+        li.appendChild(editBtn);
+        li.appendChild(delBtn);
+      }
       el.appendChild(li);
     });
   });
 }
 
-loadList("schedule",scheduleList);
-loadList("roster",rosterList);
-loadList("coaches",coachesList);
-loadList("news",newsList);
+/* EDIT ITEM */
+function editItem(path,id){
+  const li=document.querySelector(`[data-id='${id}']`) || document.querySelectorAll("ul li")[0]; // fallback
+  let current;
+  onValue(ref(db,`${path}/${id}`),snap=>current=snap.val(),{onlyOnce:true});
+  const newVal=prompt("Edit item:",current);
+  if(newVal) set(ref(db,`${path}/${id}`),newVal);
+}
 
-/* STANDINGS */
+/* Standings Table */
 onValue(ref(db,"standings"),snap=>{
   standingsBody.innerHTML="";
   let rows=[];
-  const d=snap.val()||{};
-  Object.keys(d).forEach(id=>{
-    const r=d[id].split("|").map(v=>v.trim());
+  const data=snap.val()||{};
+  Object.keys(data).forEach(id=>{
+    const r=data[id].split("|").map(v=>v.trim());
     rows.push({id,r});
   });
   rows.sort((a,b)=>(+b.r[5]||0)-(+a.r[5]||0));
   rows.forEach(({id,r})=>{
     const tr=document.createElement("tr");
     tr.innerHTML=r.map(v=>`<td>${v}</td>`).join("")+
-      `<td>${isAdmin?`<button class="small-btn delete" onclick="remove(ref(db,'standings/${id}'))">X</button>`:""}</td>`;
+      `<td>${isAdmin?`<button class="action-btn edit" onclick="editItem('standings','${id}')">Edit</button>
+      <button class="action-btn delete" onclick="remove(ref(db,'standings/${id}'))">X</button>`:""}</td>`;
     standingsBody.appendChild(tr);
   });
 });
+
+/* Load all lists initially */
+loadList("schedule",scheduleList);
+loadList("roster",rosterList);
+loadList("coaches",coachesList);
+loadList("news",newsList);
 
 /* BANNER ROTATION */
 let bannerMsgs=[],bannerIndex=0;
