@@ -15,7 +15,27 @@
 }
 *{box-sizing:border-box}
 body{margin:0;font-family:Segoe UI,Arial;background:var(--dark);color:var(--text)}
-header{background:linear-gradient(90deg,#8b0000,#ff4500);padding:18px 40px;display:flex;justify-content:space-between;align-items:center}
+
+.top-banner{
+  background:#111;
+  color:#fff;
+  padding:10px 20px;
+  font-weight:600;
+  text-align:center;
+  border-bottom:2px solid var(--accent);
+}
+.top-banner span{
+  color:var(--accent);
+  margin-right:10px;
+}
+
+header{
+  background:linear-gradient(90deg,#8b0000,#ff4500);
+  padding:18px 40px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
 .brand{display:flex;gap:18px;align-items:center}
 .brand img{height:70px}
 nav a{color:#fff;margin-left:18px;font-weight:600;cursor:pointer;text-decoration:none}
@@ -48,16 +68,18 @@ button{background:var(--accent);font-weight:700;cursor:pointer}
 
 <body>
 
+<!-- 🔥 TOP UPCOMING / RESULTS BANNER -->
+<div class="top-banner" id="bannerText">
+  <span>UPCOMING:</span> Inferno vs TBD — Date TBA
+</div>
+
 <header>
   <div class="brand">
     <img src="assets/inferno-logo.png">
     <h1>Inferno Nepean Hockey</h1>
   </div>
   <nav>
-    <a onclick="show('roster')">Roster</a>
     <a onclick="show('league')">League</a>
-    <a onclick="show('coaches')">Coaches</a>
-    <a onclick="show('record')">Team Record</a>
     <a class="admin" onclick="show('admin')">Admin</a>
     <a class="logout" id="logoutBtn" onclick="logout()">Logout</a>
   </nav>
@@ -84,7 +106,16 @@ button{background:var(--accent);font-weight:700;cursor:pointer}
 
 <section id="admin">
   <div class="card">
-    <h2>Admin Login</h2>
+    <h2>Admin Panel</h2>
+
+    <h3>Top Banner (Upcoming / Results)</h3>
+    <textarea id="bannerInput" class="admin-only"
+      placeholder="Example: UPCOMING: Inferno vs Hawks — Oct 14 @ 7:00 | RESULT: Inferno 4–2 Sens"></textarea>
+    <button class="admin-only" onclick="saveBanner()">Save Banner</button>
+
+    <hr style="margin:30px 0;border:1px solid #333">
+
+    <h3>Login</h3>
     <input id="user" placeholder="Username">
     <input id="pass" type="password" placeholder="Password">
     <button onclick="login()">Login</button>
@@ -138,7 +169,6 @@ function renderStandings(){
       if(row.length===6) rows.push({id,row});
     });
 
-    // 🔥 SORT BY POINTS
     rows.sort((a,b)=>(parseInt(b.row[5])||0)-(parseInt(a.row[5])||0));
 
     rows.forEach(({id,row})=>{
@@ -180,6 +210,16 @@ window.saveTeam=id=>{
   const values=[...row.querySelectorAll("input")].map(i=>i.value.trim());
   set(ref(db,"league/"+id),values.join(" | "));
 };
+
+/* 🔥 TOP BANNER */
+window.saveBanner=()=>{
+  const val=document.getElementById("bannerInput").value.trim();
+  if(val) set(ref(db,"banner"),val);
+};
+
+onValue(ref(db,"banner"),snap=>{
+  if(snap.exists()) bannerText.innerHTML = snap.val();
+});
 
 renderStandings();
 </script>
