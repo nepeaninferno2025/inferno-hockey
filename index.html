@@ -41,7 +41,7 @@ nav a:hover{background:rgba(255,255,255,0.3);}
 
 .banner-wrap{background:#000;margin-top:15px;height:35px;display:flex;align-items:center;border:1px solid #333;overflow:hidden;position:relative;}
 .banner-label{background:var(--accent);color:#fff;padding:0 15px;height:100%;display:flex;align-items:center;font-weight:bold;font-size:11px;z-index:2;}
-.banner-scroll{white-space:nowrap;position:absolute;animation:scrollText 30s linear infinite;color:#fff;}
+.banner-scroll{white-space:nowrap;position:absolute;animation:scrollText 30s linear infinite;color:#fff; display: flex; align-items: center;}
 @keyframes scrollText{0%{transform:translateX(100vw);}100%{transform:translateX(-100%);}}
 
 main{max-width:1200px;margin:auto;padding:20px;}
@@ -53,7 +53,12 @@ h3{color:var(--highlight);font-size:16px;margin-top:25px;border-bottom:1px solid
 
 table{width:100%;border-collapse:collapse;margin-top:10px;}
 th,td{padding:10px;text-align:center;border-bottom:1px solid #2a2a2a;font-size:14px;}
-th{background:#111;color:var(--accent);font-size:12px;}
+th{background:#111;color:var(--accent);font-size:11px;text-transform: uppercase;}
+
+/* Event specific row colors */
+.row-game { border-left: 3px solid var(--accent); }
+.row-tournament { border-left: 3px solid gold; }
+.row-practice { border-left: 3px solid #00bcff; }
 
 .news-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:15px;}
 .news-card{background:#222;padding:15px;border-radius:8px;border-top:3px solid var(--accent);}
@@ -77,18 +82,51 @@ button{background:var(--accent);color:#fff;border:none;padding:10px;margin-top:1
     <a onclick="show('news')">News</a>
     <a onclick="show('roster')">Roster</a>
     <a onclick="show('league')">Standings</a>
-    <a onclick="show('schedule')">Schedule</a>
+    <a onclick="show('schedule')">Schedule & Events</a>
     <a onclick="show('record')">Record</a>
     <a class="admin" onclick="show('admin')">Admin</a>
     <a id="logoutBtn" style="display:none;color:yellow;" onclick="logout()">Logout</a>
   </nav>
   <div class="banner-wrap">
-    <div class="banner-label">GAMES</div>
-    <div class="banner-scroll" id="bannerText">Loading...</div>
+    <div class="banner-label">UPCOMING</div>
+    <div class="banner-scroll" id="bannerText">Checking schedule...</div>
   </div>
 </header>
 
 <main>
+  <section id="schedule">
+    <div class="card">
+      <h2>Team Schedule & Events</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Type</th>
+            <th>Date</th>
+            <th>Details/Opponent</th>
+            <th>Location</th>
+            <th>Result/Score</th>
+            <th class="admin-only">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="scheduleBody"></tbody>
+      </table>
+      
+      <div class="admin-only">
+        <h3>Add New Event</h3>
+        <select id="eventType">
+          <option value="Game">Game</option>
+          <option value="Tournament">Tournament</option>
+          <option value="Practice">Practice</option>
+        </select>
+        <input id="eventDate" placeholder="Date (e.g. Jan 15, 7:00 PM)">
+        <input id="eventDetail" placeholder="Opponent or Event Name">
+        <input id="eventLoc" placeholder="Rink/Location">
+        <input id="eventResult" placeholder="Result/Score (Leave empty for upcoming)">
+        <button onclick="addEvent()">Add Event</button>
+      </div>
+    </div>
+  </section>
+
   <section id="news" class="active">
     <div class="card">
       <h2>Team News</h2>
@@ -105,13 +143,10 @@ button{background:var(--accent);color:#fff;border:none;padding:10px;margin-top:1
   <section id="roster">
     <div class="card">
       <h2>Player Roster</h2>
-      
       <h3>Forwards</h3>
       <table><thead><tr><th>Name</th><th>#</th><th>G</th><th>A</th><th>P</th><th class="admin-only">Actions</th></tr></thead><tbody id="roster-forward"></tbody></table>
-      
       <h3>Defense</h3>
       <table><thead><tr><th>Name</th><th>#</th><th>G</th><th>A</th><th>P</th><th class="admin-only">Actions</th></tr></thead><tbody id="roster-defense"></tbody></table>
-      
       <h3>Goalies</h3>
       <table><thead><tr><th>Name</th><th>#</th><th>G</th><th>A</th><th>P</th><th class="admin-only">Actions</th></tr></thead><tbody id="roster-goalie"></tbody></table>
 
@@ -140,20 +175,6 @@ button{background:var(--accent);color:#fff;border:none;padding:10px;margin-top:1
       <div class="admin-only">
         <input id="leagueInput" placeholder="Team | GP | W | L | T | PTS">
         <button onclick="saveGeneric('league', 'leagueInput')">Add Team</button>
-      </div>
-    </div>
-  </section>
-
-  <section id="schedule">
-    <div class="card">
-      <h2>Schedule & Results</h2>
-      <table>
-        <thead><tr><th>Date</th><th>Opponent</th><th>Location</th><th>Score</th><th class="admin-only">Actions</th></tr></thead>
-        <tbody id="scheduleBody"></tbody>
-      </table>
-      <div class="admin-only">
-        <input id="scheduleInput" placeholder="Date | Opponent | Location | Score (or TBD)">
-        <button onclick="saveGeneric('schedule', 'scheduleInput')">Add Game</button>
       </div>
     </div>
   </section>
@@ -197,7 +218,7 @@ window.login = () => {
   if(user.value === "athenadmin" && pass.value === "AthFon32") {
     isAdmin = true;
     document.querySelectorAll(".admin-only").forEach(e => e.style.display = "block");
-    logoutBtn.style.display = "inline-block";
+    document.getElementById('logoutBtn').style.display = "inline-block";
     renderAll();
     alert("Admin Access Granted");
   } else { alert("Access Denied"); }
@@ -206,6 +227,41 @@ window.login = () => {
 window.logout = () => { isAdmin = false; location.reload(); };
 
 // --- DATA RENDERING ---
+
+function renderSchedule() {
+  onValue(ref(db, "schedule"), snap => {
+    const body = document.getElementById("scheduleBody");
+    body.innerHTML = "";
+    const banner = document.getElementById("bannerText");
+    let bannerItems = [];
+    
+    const data = snap.val() || {};
+    Object.keys(data).forEach(id => {
+      const parts = data[id].split("|").map(p => p.trim()); // [Type, Date, Detail, Loc, Result]
+      const tr = document.createElement("tr");
+      tr.id = `schedule-${id}`;
+      tr.className = `row-${parts[0].toLowerCase()}`;
+      
+      tr.innerHTML = parts.map(p => `<td>${p}</td>`).join("");
+
+      // Banner logic: if Result is empty or TBD, it's upcoming
+      if(!parts[4] || parts[4].toLowerCase() === "tbd") {
+        let icon = parts[0] === "Tournament" ? "🏆" : "🏒";
+        bannerItems.push(`${icon} UPCOMING ${parts[0].toUpperCase()}: ${parts[1]} - ${parts[2]} (${parts[3]})`);
+      }
+
+      if(isAdmin) {
+        const td = document.createElement("td");
+        td.innerHTML = `<button class="btn-sm" onclick="initEdit('schedule','${id}','${data[id]}')">Edit</button>
+                        <button class="btn-sm" style="background:red" onclick="deleteItem('schedule','${id}')">X</button>`;
+        tr.appendChild(td);
+      }
+      body.appendChild(tr);
+    });
+    
+    banner.innerText = bannerItems.join(" | ") || "No upcoming events.";
+  });
+}
 
 function renderTable(key, bodyId) {
   onValue(ref(db, key), snap => {
@@ -217,7 +273,6 @@ function renderTable(key, bodyId) {
       const parts = data[id].split("|").map(p => p.trim());
       const tr = document.createElement("tr");
       tr.id = `${key}-${id}`;
-      
       tr.innerHTML = parts.map(p => `<td>${p}</td>`).join("");
       if(key === 'record') document.getElementById('recordDisplay').innerText = parts[1];
 
@@ -237,11 +292,10 @@ function renderRoster() {
     ["forward", "defense", "goalie"].forEach(pos => document.getElementById(`roster-${pos}`).innerHTML = "");
     const data = snap.val() || {};
     Object.keys(data).forEach(id => {
-      const p = data[id].split("|").map(x => x.trim()); // [Name, Num, Pos, G, A, P]
+      const p = data[id].split("|").map(x => x.trim()); 
       const tr = document.createElement("tr");
       tr.id = `roster-${id}`;
       tr.innerHTML = `<td>${p[0]}</td><td>${p[1]}</td><td>${p[3]}</td><td>${p[4]}</td><td>${p[5]}</td>`;
-      
       if(isAdmin) {
         const td = document.createElement("td");
         td.innerHTML = `<button class="btn-sm" onclick="initEdit('roster','${id}','${data[id]}')">Edit</button>
@@ -274,19 +328,13 @@ function renderNews() {
   });
 }
 
-function renderBanner() {
-  onValue(ref(db, "schedule"), snap => {
-    const games = snap.val() || {};
-    let txt = "";
-    Object.keys(games).forEach(id => {
-      const g = games[id].split("|");
-      if(!g[3] || g[3].toLowerCase() === "tbd") txt += `🏒 ${g[0]} vs ${g[1]} (${g[2]}) | `;
-    });
-    document.getElementById("bannerText").innerText = txt || "No upcoming games.";
-  });
-}
-
 // --- ACTIONS ---
+
+window.addEvent = () => {
+    const val = `${eventType.value}|${eventDate.value}|${eventDetail.value}|${eventLoc.value}|${eventResult.value}`;
+    set(ref(db, "schedule/" + Date.now()), val);
+    eventDate.value=""; eventDetail.value=""; eventLoc.value=""; eventResult.value="";
+};
 
 window.saveGeneric = (key, inputId) => {
     const val = document.getElementById(inputId).value;
@@ -310,7 +358,7 @@ window.deleteItem = (key, id) => { if(confirm("Delete?")) remove(ref(db, key+"/"
 
 window.initEdit = (key, id, currentVal) => {
     const tr = document.getElementById(`${key}-${id}`);
-    const originalContent = tr.innerHTML;
+    if(!tr) return;
     tr.innerHTML = `<td colspan="100%"><input id="edit-${id}" value="${currentVal}">
                     <button class="btn-sm save-btn" onclick="finishEdit('${key}','${id}')">Save</button>
                     <button class="btn-sm cancel-btn" onclick="renderAll()">Cancel</button></td>`;
@@ -324,10 +372,9 @@ window.finishEdit = (key, id) => {
 function renderAll() {
   renderNews();
   renderRoster();
+  renderSchedule();
   renderTable("league", "leagueBody");
-  renderTable("schedule", "scheduleBody");
   renderTable("record", "recordBody");
-  renderBanner();
 }
 
 renderAll();
