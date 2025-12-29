@@ -55,7 +55,6 @@ table{width:100%;border-collapse:collapse;margin-top:10px;}
 th,td{padding:10px;text-align:center;border-bottom:1px solid #2a2a2a;font-size:14px;}
 th{background:#111;color:var(--accent);font-size:11px;text-transform: uppercase;}
 
-/* Event specific row colors */
 .row-game { border-left: 3px solid var(--accent); }
 .row-tournament { border-left: 3px solid gold; }
 .row-practice { border-left: 3px solid #00bcff; }
@@ -94,39 +93,6 @@ button{background:var(--accent);color:#fff;border:none;padding:10px;margin-top:1
 </header>
 
 <main>
-  <section id="schedule">
-    <div class="card">
-      <h2>Team Schedule & Events</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Type</th>
-            <th>Date</th>
-            <th>Details/Opponent</th>
-            <th>Location</th>
-            <th>Result/Score</th>
-            <th class="admin-only">Actions</th>
-          </tr>
-        </thead>
-        <tbody id="scheduleBody"></tbody>
-      </table>
-      
-      <div class="admin-only">
-        <h3>Add New Event</h3>
-        <select id="eventType">
-          <option value="Game">Game</option>
-          <option value="Tournament">Tournament</option>
-          <option value="Practice">Practice</option>
-        </select>
-        <input id="eventDate" placeholder="Date (e.g. Jan 15, 7:00 PM)">
-        <input id="eventDetail" placeholder="Opponent or Event Name">
-        <input id="eventLoc" placeholder="Rink/Location">
-        <input id="eventResult" placeholder="Result/Score (Leave empty for upcoming)">
-        <button onclick="addEvent()">Add Event</button>
-      </div>
-    </div>
-  </section>
-
   <section id="news" class="active">
     <div class="card">
       <h2>Team News</h2>
@@ -179,6 +145,31 @@ button{background:var(--accent);color:#fff;border:none;padding:10px;margin-top:1
     </div>
   </section>
 
+  <section id="schedule">
+    <div class="card">
+      <h2>Team Schedule & Events</h2>
+      <table>
+        <thead>
+          <tr><th>Type</th><th>Date</th><th>Details</th><th>Location</th><th>Result/Score</th><th class="admin-only">Actions</th></tr>
+        </thead>
+        <tbody id="scheduleBody"></tbody>
+      </table>
+      <div class="admin-only">
+        <h3>Add New Event</h3>
+        <select id="eventType">
+          <option value="Game">Game</option>
+          <option value="Tournament">Tournament</option>
+          <option value="Practice">Practice</option>
+        </select>
+        <input id="eventDate" placeholder="Date/Time">
+        <input id="eventDetail" placeholder="Opponent or Name">
+        <input id="eventLoc" placeholder="Location">
+        <input id="eventResult" placeholder="Result (Empty if upcoming)">
+        <button onclick="addEvent()">Add Event</button>
+      </div>
+    </div>
+  </section>
+
   <section id="record">
     <div class="card">
         <h2>Season Record</h2>
@@ -226,7 +217,44 @@ window.login = () => {
 
 window.logout = () => { isAdmin = false; location.reload(); };
 
-// --- DATA RENDERING ---
+// --- DATA RENDERING WITH AUTO-SORT ---
+
+function renderTable(key, bodyId) {
+  onValue(ref(db, key), snap => {
+    const body = document.getElementById(bodyId);
+    if(!body) return;
+    body.innerHTML = "";
+    const data = snap.val() || {};
+    
+    let keys = Object.keys(data);
+
+    // AUTO-SORT FOR LEAGUE STANDINGS (By Points - Index 5)
+    if(key === "league") {
+      keys.sort((a, b) => {
+        const ptsA = parseInt(data[a].split("|")[5]) || 0;
+        const ptsB = parseInt(data[b].split("|")[5]) || 0;
+        return ptsB - ptsA;
+      });
+    }
+
+    keys.forEach(id => {
+      const parts = data[id].split("|").map(p => p.trim());
+      const tr = document.createElement("tr");
+      tr.id = `${key}-${id}`;
+      tr.innerHTML = parts.map(p => `<td>${p}</td>`).join("");
+      
+      if(key === 'record') document.getElementById('recordDisplay').innerText = parts[1];
+
+      if(isAdmin) {
+        const td = document.createElement("td");
+        td.innerHTML = `<button class="btn-sm" onclick="initEdit('${key}','${id}','${data[id]}')">Edit</button>
+                        <button class="btn-sm" style="background:red" onclick="deleteItem('${key}','${id}')">X</button>`;
+        tr.appendChild(td);
+      }
+      body.appendChild(tr);
+    });
+  });
+}
 
 function renderSchedule() {
   onValue(ref(db, "schedule"), snap => {
@@ -234,17 +262,15 @@ function renderSchedule() {
     body.innerHTML = "";
     const banner = document.getElementById("bannerText");
     let bannerItems = [];
-    
     const data = snap.val() || {};
+    
     Object.keys(data).forEach(id => {
-      const parts = data[id].split("|").map(p => p.trim()); // [Type, Date, Detail, Loc, Result]
+      const parts = data[id].split("|").map(p => p.trim());
       const tr = document.createElement("tr");
       tr.id = `schedule-${id}`;
       tr.className = `row-${parts[0].toLowerCase()}`;
-      
       tr.innerHTML = parts.map(p => `<td>${p}</td>`).join("");
 
-      // Banner logic: if Result is empty or TBD, it's upcoming
       if(!parts[4] || parts[4].toLowerCase() === "tbd") {
         let icon = parts[0] === "Tournament" ? "🏆" : "🏒";
         bannerItems.push(`${icon} UPCOMING ${parts[0].toUpperCase()}: ${parts[1]} - ${parts[2]} (${parts[3]})`);
@@ -258,32 +284,7 @@ function renderSchedule() {
       }
       body.appendChild(tr);
     });
-    
     banner.innerText = bannerItems.join(" | ") || "No upcoming events.";
-  });
-}
-
-function renderTable(key, bodyId) {
-  onValue(ref(db, key), snap => {
-    const body = document.getElementById(bodyId);
-    if(!body) return;
-    body.innerHTML = "";
-    const data = snap.val() || {};
-    Object.keys(data).forEach(id => {
-      const parts = data[id].split("|").map(p => p.trim());
-      const tr = document.createElement("tr");
-      tr.id = `${key}-${id}`;
-      tr.innerHTML = parts.map(p => `<td>${p}</td>`).join("");
-      if(key === 'record') document.getElementById('recordDisplay').innerText = parts[1];
-
-      if(isAdmin) {
-        const td = document.createElement("td");
-        td.innerHTML = `<button class="btn-sm" onclick="initEdit('${key}','${id}','${data[id]}')">Edit</button>
-                        <button class="btn-sm" style="background:red" onclick="deleteItem('${key}','${id}')">X</button>`;
-        tr.appendChild(td);
-      }
-      body.appendChild(tr);
-    });
   });
 }
 
@@ -357,7 +358,7 @@ window.saveNews = () => {
 window.deleteItem = (key, id) => { if(confirm("Delete?")) remove(ref(db, key+"/"+id)); };
 
 window.initEdit = (key, id, currentVal) => {
-    const tr = document.getElementById(`${key}-${id}`);
+    const tr = document.getElementById(`${key}-${id}`) || document.getElementById(`news-${id}`);
     if(!tr) return;
     tr.innerHTML = `<td colspan="100%"><input id="edit-${id}" value="${currentVal}">
                     <button class="btn-sm save-btn" onclick="finishEdit('${key}','${id}')">Save</button>
