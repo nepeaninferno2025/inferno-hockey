@@ -6,10 +6,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" href="assets/inferno-logo.png" type="image/png">
 
-<!-- Firebase -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
-import { getDatabase } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-database.js";
+import { getDatabase, ref, set, onValue, remove } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-database.js";
 
 const firebaseConfig = {
   apiKey:"AIzaSyCcl7fjelmFRMSNqrNfCTSEJxJcxj7lano",
@@ -26,208 +25,353 @@ window.db = getDatabase(window.app);
   --card:#171717;
   --accent:#ff4500;
   --text:#f2f2f2;
+  --highlight:#ff7a3d;
+  --danger: #ff3333;
+  --success: #28a745;
 }
 *{box-sizing:border-box;}
-body{margin:0;font-family:Segoe UI,Arial,sans-serif;background:var(--dark);color:var(--text);}
+body{margin:0;font-family:"Segoe UI",Arial,sans-serif;background:var(--dark);color:var(--text); line-height: 1.6;}
 
-header{
-  background:linear-gradient(90deg,#8b0000,#ff4500);
-  padding:12px 20px 8px;
+/* Header & Banner Styling */
+header{background:linear-gradient(135deg,#8b0000,#ff4500);padding:20px;box-shadow: 0 4px 15px rgba(0,0,0,0.5);}
+.brand{display:flex;gap:15px;align-items:center;}
+.brand img{height:70px; filter: drop-shadow(0 0 5px rgba(0,0,0,0.5));}
+.brand h1 {margin:0; font-size: 24px; text-transform: uppercase; letter-spacing: 1px;}
+.brand span{font-size:13px;color:#ffe1e1; font-style: italic; opacity: 0.9;}
+
+nav{display:flex;gap:10px;align-items:center;flex-wrap:wrap; margin-top: 15px;}
+nav a{color:#fff;font-weight:600;cursor:pointer;text-decoration:none;font-size:13px; padding: 6px 12px; border-radius: 4px; transition: 0.3s;}
+nav a:hover{background: rgba(255,255,255,0.1);}
+nav a.admin{border:1px solid rgba(255,255,255,0.5);}
+nav a.logout{border:1px solid var(--dark); background: var(--dark); color: white; display:none;}
+
+/* Improved Banner */
+.banner-container {
+    background: rgba(0,0,0,0.4);
+    margin-top: 15px;
+    padding: 8px 0;
+    border-radius: 4px;
+    border: 1px solid rgba(255,255,255,0.1);
+    overflow: hidden;
+    position: relative;
 }
-
-.brand{display:flex;gap:12px;align-items:center;}
-.brand img{height:60px;}
-
-nav{
-  display:flex;
-  gap:12px;
-  margin-top:8px;
-  flex-wrap:wrap;
+.banner-scroll{
+    display: inline-block;
+    white-space: nowrap;
+    font-weight: 500;
+    font-size: 14px;
+    animation: scroll 25s linear infinite;
+    color: #fff;
 }
-nav a{color:#fff;font-weight:600;cursor:pointer;text-decoration:none;font-size:14px;}
-nav a.admin{border:1px solid #fff;padding:5px 12px;border-radius:20px;}
-nav a.logout{border:1px solid #ff4500;color:#ff4500;padding:5px 12px;border-radius:20px;display:none;}
-
-.banner{
-  background:#111;
-  margin-top:10px;
-  border-radius:8px;
-  overflow:hidden;
-  height:34px;
-  display:flex;
-  align-items:center;
-}
-
-.banner span{
-  display:inline-block;
-  white-space:nowrap;
-  padding-left:100%;
-  font-weight:700;
-  animation:scroll 22s linear infinite;
-}
-
-@keyframes scroll{
-  from{transform:translateX(0);}
-  to{transform:translateX(-100%);}
-}
-
-.countdown{
-  text-align:center;
-  font-size:13px;
-  margin-top:6px;
-  opacity:.9;
-}
+@keyframes scroll{0%{transform:translateX(100vw);}100%{transform:translateX(-100%);}}
 
 main{max-width:1200px;margin:auto;padding:20px;}
-section{display:none;}
+section{display:none; animation: fadeIn 0.4s ease;}
 section.active{display:block;}
+@keyframes fadeIn { from{opacity:0;} to{opacity:1;} }
 
-.card{
-  background:var(--card);
-  padding:20px;
-  border-radius:12px;
-  margin-bottom:20px;
+.card{background:var(--card);padding:25px;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.6);margin-bottom:20px; border: 1px solid #222;}
+h2{margin-top:0;border-left:6px solid var(--accent);padding-left:15px; font-size: 20px; margin-bottom: 20px;}
+
+/* Table Styling */
+table{width:100%;border-collapse:collapse; background: #111;}
+th,td{border:1px solid #2a2a2a;padding:12px 8px;text-align:center;}
+th{background:#050505;color:var(--accent); font-size: 13px; text-transform: uppercase;}
+tr:hover {background: #1a1a1a;}
+
+.admin-only{display:none; margin-top: 15px;}
+textarea,input,button{width:100%;margin-top:10px;padding:10px;border-radius:6px;border:1px solid #333;}
+textarea,input{background:#0f0f0f;color:#fff; outline: none;}
+textarea:focus, input:focus {border-color: var(--accent);}
+
+button{background:var(--accent); color: white; font-weight: 700; cursor:pointer; border: none; transition: 0.2s; text-transform: uppercase;}
+button:hover{background: var(--highlight); transform: translateY(-1px);}
+
+.action-btn{padding:5px 10px; margin:2px; border-radius:4px; font-size: 11px; width: auto; display: inline-block;}
+.edit-btn{background: #888; color:#fff;}
+.delete-btn{background: var(--danger); color:#fff;}
+.save-btn{background: var(--success); color:#fff;}
+.cancel-btn{background:#444; color:#fff;}
+
+.team-record-display {
+    padding: 20px;
+    text-align: center;
+    background: #111;
+    border-radius: 8px;
+    margin-bottom: 20px;
 }
+.record-score{font-size:42px;color:var(--accent);font-weight:900; letter-spacing: 2px;}
+.countdown{font-size:13px;color:#fff;margin-top:10px;text-align:center; background: rgba(0,0,0,0.3); display: inline-block; padding: 4px 15px; border-radius: 20px; border: 1px solid var(--accent);}
 
-h2{margin-top:0;border-left:6px solid var(--accent);padding-left:10px;}
+.footer{margin-top:60px;padding:20px; text-align:center;font-size:12px;color:#666; border-top: 1px solid #222;}
+a.link{color:var(--highlight);text-decoration:none; margin: 0 5px;}
 
-table{width:100%;border-collapse:collapse;margin-top:15px;}
-th,td{border:1px solid #2a2a2a;padding:8px;text-align:center;}
-th{background:#111;color:var(--accent);}
-
-.admin-only{display:none;}
-textarea,input,button{
-  width:100%;
-  margin-top:10px;
-  padding:8px;
-  border-radius:6px;
-  border:none;
+@media(max-width:768px){
+    header{text-align: center;}
+    .brand{flex-direction: column;}
+    nav{justify-content: center;}
+    .record-score{font-size: 30px;}
 }
-textarea,input{background:#0f0f0f;color:#fff;}
-button{background:var(--accent);font-weight:700;cursor:pointer;}
-
-.action-btn{padding:4px 8px;border-radius:6px;border:none;cursor:pointer;}
-.edit-btn{background:orange;color:#000;}
-.delete-btn{background:red;color:#fff;}
-.save-btn{background:green;color:#fff;}
-.cancel-btn{background:#777;color:#fff;}
-
-.team-record{text-align:center;}
-.record-score{font-size:36px;font-weight:900;color:#ff3b3b;}
-
-.footer{text-align:center;font-size:12px;color:#aaa;margin:40px 0 20px;}
 </style>
 </head>
-
 <body>
 
 <header>
   <div class="brand">
-    <img src="assets/inferno-logo.png">
+    <img src="assets/inferno-logo.png" alt="Logo">
     <div>
       <h1>Inferno Nepean Hockey</h1>
-      <small>Loyalty • Trust • Commitment</small>
+      <span>Loyalty • Trust • Commitment</span>
     </div>
   </div>
-
   <nav>
     <a onclick="show('roster')">Roster</a>
     <a onclick="show('league')">League</a>
     <a onclick="show('coaches')">Coaches</a>
     <a onclick="show('schedule')">Schedule</a>
     <a onclick="show('news')">News</a>
-    <a onclick="show('record')">Team Record</a>
+    <a onclick="show('record')">Record</a>
     <a class="admin" onclick="show('admin')">Admin</a>
     <a class="logout" id="logoutBtn" onclick="logout()">Logout</a>
   </nav>
-
-  <div class="banner">
-    <span id="bannerText">Loading updates...</span>
+  <div class="banner-container">
+    <div class="banner-scroll" id="bannerText">Loading upcoming games and news...</div>
   </div>
-
-  <div class="countdown" id="countdown">Next Game: --</div>
+  <div style="text-align: center;"><div class="countdown" id="countdown">Next Game: Calculating...</div></div>
 </header>
 
 <main>
-
 <section id="record">
   <div class="card">
-    <h2>Team Record</h2>
-    <div class="team-record">
-      <div class="record-score" id="recordText">0 - 0 - 0</div>
-      <div>U15 HB Team I • 2025–2026</div>
-
-      <textarea id="recordInput" class="admin-only" placeholder="W - L - T"></textarea>
-      <button class="admin-only" onclick="saveRecord()">Save Record</button>
+    <h2>Team Season Record</h2>
+    <div class="team-record-display">
+        <div class="record-score" id="recordDisplay">0 - 0 - 0</div>
+        <div style="color: #888; font-size: 14px; margin-top: 5px;">U15 HB Team I • 2025–2026</div>
     </div>
+    <table>
+      <thead>
+        <tr><th>Season/Phase</th><th>W - L - T</th><th>Actions</th></tr>
+      </thead>
+      <tbody id="recordBody"></tbody>
+    </table>
+    <div class="admin-only">
+        <input id="recordInput" placeholder="Season Name | W-L-T">
+        <button onclick="save('record')">Update Record Table</button>
+    </div>
+  </div>
+</section>
+
+<section id="roster">
+  <div class="card">
+    <h2>Player Roster</h2>
+    <table>
+      <thead>
+        <tr><th>Name</th><th>Position</th><th>#</th><th>G</th><th>A</th><th>PTS</th><th>Actions</th></tr>
+      </thead>
+      <tbody id="rosterBody"></tbody>
+    </table>
+    <textarea id="rosterInput" class="admin-only" placeholder="Name | Position | Number | Goals | Assists | Points"></textarea>
+    <button class="admin-only" onclick="save('roster')">Add Player</button>
+  </div>
+</section>
+
+<section id="coaches">
+  <div class="card">
+    <h2>Coaching Staff</h2>
+    <table>
+      <thead><tr><th>Name</th><th>Role</th><th>Actions</th></tr></thead>
+      <tbody id="coachesBody"></tbody>
+    </table>
+    <textarea id="coachesInput" class="admin-only" placeholder="Name | Role"></textarea>
+    <button class="admin-only" onclick="save('coaches')">Add Coach</button>
+  </div>
+</section>
+
+<section id="league">
+  <div class="card">
+    <h2>League Standings</h2>
+    <table>
+      <thead>
+        <tr><th>Team</th><th>GP</th><th>W</th><th>L</th><th>T</th><th>PTS</th><th>Actions</th></tr>
+      </thead>
+      <tbody id="leagueBody"></tbody>
+    </table>
+    <textarea id="leagueInput" class="admin-only" placeholder="Team | GP | W | L | T | PTS"></textarea>
+    <button class="admin-only" onclick="save('league')">Add Team</button>
+  </div>
+</section>
+
+<section id="schedule">
+  <div class="card">
+    <h2>Schedule & Results</h2>
+    <table>
+      <thead><tr><th>Date</th><th>Opponent</th><th>Location</th><th>Score</th><th>Actions</th></tr></thead>
+      <tbody id="scheduleBody"></tbody>
+    </table>
+    <textarea id="scheduleInput" class="admin-only" placeholder="Date | Opponent | Location | Score"></textarea>
+    <button class="admin-only" onclick="save('schedule')">Add Game</button>
+  </div>
+</section>
+
+<section id="news">
+  <div class="card">
+    <h2>Latest News</h2>
+    <table>
+        <thead><tr><th>Title</th><th>Description</th><th>Link</th><th>Actions</th></tr></thead>
+        <tbody id="newsBody"></tbody>
+    </table>
+    <textarea id="newsInput" class="admin-only" placeholder="Title | Description | Link (optional)"></textarea>
+    <button class="admin-only" onclick="save('news')">Add News</button>
   </div>
 </section>
 
 <section id="admin">
   <div class="card">
-    <h2>Admin Login</h2>
+    <h2>Admin Access</h2>
     <input id="user" placeholder="Username">
     <input id="pass" type="password" placeholder="Password">
-    <button onclick="login()">Login</button>
+    <button onclick="login()">Sign In</button>
   </div>
 </section>
-
 </main>
 
 <div class="footer">
-  © 2025 Inferno Nepean Hockey
+  &copy; 2025 Inferno Nepean Hockey | 
+  <a class="link" href="#">Instagram</a> • 
+  <a class="link" href="#">Twitter</a> • 
+  <a class="link" href="#">YouTube</a>
 </div>
 
 <script type="module">
-import { ref, set, onValue } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-database.js";
-
+import { ref, set, onValue, remove } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-database.js";
 const db = window.db;
 const ADMIN_USER="athenadmin";
 const ADMIN_PASS="AthFon32";
-let isAdmin=false;
+let isAdmin = false;
 
-window.show=id=>{
+// Navigation
+window.show = id=>{
   document.querySelectorAll("section").forEach(s=>s.classList.remove("active"));
   document.getElementById(id).classList.add("active");
 };
-show("record");
 
-window.login=()=>{
-  if(user.value!==ADMIN_USER||pass.value!==ADMIN_PASS) return alert("Wrong login");
+// Start Up
+document.addEventListener("DOMContentLoaded",()=>{ 
+    show("roster"); 
+    renderAll(); 
+});
+
+window.login = ()=>{
+  if(user.value!==ADMIN_USER||pass.value!==ADMIN_PASS) return alert("Incorrect login");
   isAdmin=true;
   document.querySelectorAll(".admin-only").forEach(e=>e.style.display="block");
-  logoutBtn.style.display="inline-block";
+  document.getElementById("logoutBtn").style.display="inline-block";
+  renderAll();
+  alert("Logged in as Administrator");
 };
 
-window.logout=()=>{
+window.logout = ()=>{
   isAdmin=false;
   document.querySelectorAll(".admin-only").forEach(e=>e.style.display="none");
-  logoutBtn.style.display="none";
+  document.getElementById("logoutBtn").style.display="none";
+  show("roster");
+  renderAll();
 };
 
-function saveRecord(){
-  if(!isAdmin) return;
-  const val=recordInput.value.trim();
-  if(!val) return;
-  set(ref(db,"teamRecord"),val);
-  recordInput.value="";
+// Unified Table Renderer
+function renderTable(key, bodyId, cols){
+  onValue(ref(db,key), snap=>{
+    const body=document.getElementById(bodyId);
+    if(!body) return;
+    body.innerHTML="";
+    const data=snap.val()||{};
+    
+    let keys = Object.keys(data);
+    
+    // Sort logic for League
+    if(key==="league") {
+        keys.sort((a,b)=> (parseInt(data[b].split("|")[5]||0)) - (parseInt(data[a].split("|")[5]||0)) );
+    }
+
+    keys.forEach(id=>{
+      const row=data[id].split("|").map(x=>x.trim());
+      if(row.length===cols){
+        const tr=document.createElement("tr");
+        tr.setAttribute("data-id",id);
+        tr.innerHTML=row.map(v=>`<td>${v}</td>`).join("");
+        
+        // Custom logic for Record display update
+        if(key === "record" && keys[0] === id) {
+            document.getElementById("recordDisplay").textContent = row[1];
+        }
+
+        if(isAdmin) {
+            tr.innerHTML+=`<td>
+              <button class="action-btn edit-btn" onclick="editRow('${key}','${id}')">Edit</button>
+              <button class="action-btn delete-btn" onclick="deleteRow('${key}','${id}')">Delete</button>
+            </td>`;
+        } else {
+            tr.innerHTML+="<td>--</td>";
+        }
+        body.appendChild(tr);
+      }
+    });
+  });
 }
 
-onValue(ref(db,"teamRecord"),snap=>{
-  if(snap.exists()){
-    recordText.textContent=snap.val();
-  }
-});
+// Global UI Actions
+window.editRow = (key,id)=>{
+  const row=document.querySelector(`#${key}Body tr[data-id='${id}']`);
+  const cells=Array.from(row.children).slice(0,row.children.length-1);
+  const originalValues=cells.map(td=>td.textContent);
+  cells.forEach((td)=>td.innerHTML=`<input value="${td.textContent}">`);
+  row.children[row.children.length-1].innerHTML=`
+    <button class="action-btn save-btn" onclick="saveRow('${key}','${id}')">Save</button>
+    <button class="action-btn cancel-btn" onclick="renderAll()">Cancel</button>`;
+};
 
-onValue(ref(db,"schedule"),snap=>{
-  const data=snap.val()||{};
-  let text="Upcoming Games: ";
-  Object.values(data).forEach(v=>{
-    const g=v.split("|");
-    text+=`${g[0]} vs ${g[1]} • `;
+window.saveRow = (key,id)=>{
+  const row=document.querySelector(`#${key}Body tr[data-id='${id}']`);
+  const inputs=Array.from(row.querySelectorAll('input'));
+  const newValue=inputs.map(input=>input.value.trim()).join(" | ");
+  set(ref(db,key+"/"+id),newValue);
+};
+
+window.deleteRow=(key,id)=>{ if(confirm("Delete this entry?")) remove(ref(db,key+"/"+id)); };
+window.save=(key)=>{ 
+    const input=document.getElementById(key+"Input"); 
+    if(!input.value.trim()) return; 
+    set(ref(db,key+"/"+Date.now().toString()), input.value); 
+    input.value=""; 
+};
+
+// Improved Banner Data Fetching
+function renderBanner(){
+  onValue(ref(db,"schedule"), snap=>{
+    const games = snap.val()||{};
+    let text=" • NEXT UP: ";
+    Object.keys(games).forEach(k=>{
+        const g=games[k].split("|"); 
+        if(g[3] === "" || g[3] === "TBD") text+=`${g[0]}: vs ${g[1]} @ ${g[2]} • `;
+    });
+    onValue(ref(db,"news"), nSnap=>{
+      const news=nSnap.val()||{};
+      text += " LATEST NEWS: ";
+      Object.keys(news).forEach(k=>{const item=news[k].split("|"); text+=`${item[0]}... `;});
+      document.getElementById("bannerText").textContent=text + " • Welcome to Inferno Nepean Hockey • ";
+    });
   });
-  bannerText.textContent=text;
-});
+}
+
+function renderAll(){
+    renderTable("roster","rosterBody",6);
+    renderTable("coaches","coachesBody",2);
+    renderTable("league","leagueBody",6);
+    renderTable("schedule","scheduleBody",4);
+    renderTable("news","newsBody",3);
+    renderTable("record","recordBody",2);
+    renderBanner();
+}
 </script>
 
 </body>
