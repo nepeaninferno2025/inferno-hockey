@@ -53,7 +53,7 @@ h3{color:var(--highlight);font-size:16px;margin-top:25px;border-bottom:1px solid
 
 table{width:100%;border-collapse:collapse;margin-top:10px; min-width: 1000px;}
 th,td{padding:10px;text-align:center;border-bottom:1px solid #2a2a2a;font-size:13px;}
-th{background:#111;color:var(--accent);font-size:11px;text-transform: uppercase; white-space: nowrap;}
+th{background:#111;color:var(--accent);font-size:11px;text-transform: uppercase; white-space: nowrap; position: sticky; top: 0;}
 
 .row-game { border-left: 3px solid var(--accent); }
 .row-tournament { border-left: 3px solid gold; }
@@ -138,7 +138,7 @@ button{background:var(--accent);color:#fff;border:none;padding:10px;margin-top:1
         <thead>
           <tr>
             <th>Team</th><th>GP</th><th>W</th><th>L</th><th>T</th><th>PTS</th>
-            <th>GF</th><th>GA</th><th>PIM</th><th>SHG</th><th>Face %</th>
+            <th>GF</th><th>GA</th><th>PIM</th><th>Face %</th>
             <th>Shots</th><th>L10</th><th>Strk</th><th>Last Game</th>
             <th class="admin-only">Actions</th>
           </tr>
@@ -146,7 +146,7 @@ button{background:var(--accent);color:#fff;border:none;padding:10px;margin-top:1
         <tbody id="leagueBody"></tbody>
       </table>
       <div class="admin-only">
-        <input id="leagueInput" placeholder="Team | GP | W | L | T | PTS | GF | GA | PIM | SHG | Face% | Shots | L10 | Strk | Last Game">
+        <input id="leagueInput" placeholder="Team | GP | W | L | T | PTS | GF | GA | PIM | Face% | Shots | L10 | Strk | Last Game">
         <button onclick="saveGeneric('league', 'leagueInput')">Add/Update Team</button>
       </div>
     </div>
@@ -369,7 +369,7 @@ window.deleteItem = (key, id) => { if(confirm("Delete?")) remove(ref(db, key+"/"
 window.initEdit = (key, id, currentVal) => {
     const tr = document.getElementById(`${key}-${id}`) || document.getElementById(`news-${id}`);
     if(!tr) return;
-    tr.innerHTML = `<td colspan="100%"><input id="edit-${id}" value="${currentVal}">
+    tr.innerHTML = `<td colspan="100%"><input id="edit-${id}" style="width:80%" value="${currentVal}">
                     <button class="btn-sm save-btn" onclick="finishEdit('${key}','${id}')">Save</button>
                     <button class="btn-sm cancel-btn" onclick="renderAll()">Cancel</button></td>`;
 };
