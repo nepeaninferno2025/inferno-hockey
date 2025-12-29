@@ -44,16 +44,16 @@ nav a:hover{background:rgba(255,255,255,0.3);}
 .banner-scroll{white-space:nowrap;position:absolute;animation:scrollText 30s linear infinite;color:#fff; display: flex; align-items: center;}
 @keyframes scrollText{0%{transform:translateX(100vw);}100%{transform:translateX(-100%);}}
 
-main{max-width:1200px;margin:auto;padding:20px;}
+main{max-width:1400px;margin:auto;padding:20px;}
 section{display:none;}
 section.active{display:block;}
-.card{background:var(--card);padding:20px;border-radius:12px;margin-bottom:20px;border:1px solid #222;}
+.card{background:var(--card);padding:20px;border-radius:12px;margin-bottom:20px;border:1px solid #222; overflow-x: auto;}
 h2{margin-top:0;border-left:5px solid var(--accent);padding-left:15px;text-transform:uppercase;font-size:20px;}
 h3{color:var(--highlight);font-size:16px;margin-top:25px;border-bottom:1px solid #333;padding-bottom:5px;}
 
-table{width:100%;border-collapse:collapse;margin-top:10px;}
-th,td{padding:10px;text-align:center;border-bottom:1px solid #2a2a2a;font-size:14px;}
-th{background:#111;color:var(--accent);font-size:11px;text-transform: uppercase;}
+table{width:100%;border-collapse:collapse;margin-top:10px; min-width: 1000px;}
+th,td{padding:10px;text-align:center;border-bottom:1px solid #2a2a2a;font-size:13px;}
+th{background:#111;color:var(--accent);font-size:11px;text-transform: uppercase; white-space: nowrap;}
 
 .row-game { border-left: 3px solid var(--accent); }
 .row-tournament { border-left: 3px solid gold; }
@@ -135,12 +135,19 @@ button{background:var(--accent);color:#fff;border:none;padding:10px;margin-top:1
     <div class="card">
       <h2>League Standings</h2>
       <table>
-        <thead><tr><th>Team</th><th>GP</th><th>W</th><th>L</th><th>T</th><th>PTS</th><th class="admin-only">Actions</th></tr></thead>
+        <thead>
+          <tr>
+            <th>Team</th><th>GP</th><th>W</th><th>L</th><th>T</th><th>PTS</th>
+            <th>GF</th><th>GA</th><th>PIM</th><th>SHG</th><th>Face %</th>
+            <th>Shots</th><th>L10</th><th>Strk</th><th>Last Game</th>
+            <th class="admin-only">Actions</th>
+          </tr>
+        </thead>
         <tbody id="leagueBody"></tbody>
       </table>
       <div class="admin-only">
-        <input id="leagueInput" placeholder="Team | GP | W | L | T | PTS">
-        <button onclick="saveGeneric('league', 'leagueInput')">Add Team</button>
+        <input id="leagueInput" placeholder="Team | GP | W | L | T | PTS | GF | GA | PIM | SHG | Face% | Shots | L10 | Strk | Last Game">
+        <button onclick="saveGeneric('league', 'leagueInput')">Add/Update Team</button>
       </div>
     </div>
   </section>
@@ -217,7 +224,7 @@ window.login = () => {
 
 window.logout = () => { isAdmin = false; location.reload(); };
 
-// --- DATA RENDERING WITH AUTO-SORT ---
+// --- DATA RENDERING ---
 
 function renderTable(key, bodyId) {
   onValue(ref(db, key), snap => {
@@ -228,7 +235,7 @@ function renderTable(key, bodyId) {
     
     let keys = Object.keys(data);
 
-    // AUTO-SORT FOR LEAGUE STANDINGS (By Points - Index 5)
+    // SORT FOR LEAGUE STANDINGS (By Points - Index 5)
     if(key === "league") {
       keys.sort((a, b) => {
         const ptsA = parseInt(data[a].split("|")[5]) || 0;
@@ -315,7 +322,9 @@ function renderNews() {
     grid.innerHTML = "";
     const data = snap.val() || {};
     Object.keys(data).forEach(id => {
-      const [t, c] = data[id].split("|");
+      const parts = data[id].split("|");
+      const t = parts[0];
+      const c = parts[1];
       const div = document.createElement("div");
       div.className = "news-card";
       div.id = `news-${id}`;
